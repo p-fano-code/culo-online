@@ -9,7 +9,7 @@ import './App.css';
 
 function App() {
   const [connected, setConnected] = useState(socket.connected);
-  const { room, session, error: roomError, createRoom, joinRoom, startRoom, leaveRoom } = useRoom();
+  const { room, session, error: roomError, createRoom, joinRoom, startRoom, leaveRoom, closeRoom } = useRoom();
   const { game, error: gameError, playCards, pass } = useGame();
 
   useEffect(() => {
@@ -47,6 +47,7 @@ function App() {
         joinRoom={joinRoom}
         startRoom={startRoom}
         leaveRoom={leaveRoom}
+        closeRoom={closeRoom}
       />
     );
   }
@@ -64,7 +65,14 @@ function App() {
 
   return (
     <>
-      <Table game={game} players={room.players} myPlayerId={session.playerId} error={gameError} />
+      <Table
+        game={game}
+        players={room.players}
+        myPlayerId={session.playerId}
+        isHost={room.hostId === session.playerId}
+        error={gameError}
+        closeRoom={closeRoom}
+      />
       {game.phase === 'playing' && (
         <Hand cards={game.hand} isMyTurn={isMyTurn} canPass={canPass} onPlay={playCards} onPass={pass} />
       )}

@@ -6,7 +6,9 @@ interface TableProps {
   game: GameView;
   players: PlayerView[];
   myPlayerId: string;
+  isHost: boolean;
   error: string | null;
+  closeRoom: () => void;
 }
 
 const ROLE_LABELS: Record<Exclude<Role, null>, string> = {
@@ -20,10 +22,23 @@ function playerName(players: PlayerView[], id: string): string {
   return players.find((p) => p.id === id)?.name ?? id;
 }
 
-export function Table({ game, players, myPlayerId, error }: TableProps) {
+export function Table({ game, players, myPlayerId, isHost, error, closeRoom }: TableProps) {
+  const handleCloseRoom = () => {
+    if (window.confirm('¿Seguro que quieres finalizar la partida? Se cerrará la sala para todos los jugadores.')) {
+      closeRoom();
+    }
+  };
+
+  const closeButton = isHost ? (
+    <button type="button" className="danger table-close" onClick={handleCloseRoom}>
+      Finalizar partida
+    </button>
+  ) : null;
+
   if (game.phase === 'finished') {
     return (
       <section id="table">
+        {closeButton}
         <h1>Partida terminada</h1>
         <ol className="ranking">
           {game.finishedOrder.map((id) => {
@@ -42,6 +57,8 @@ export function Table({ game, players, myPlayerId, error }: TableProps) {
 
   return (
     <section id="table">
+      {closeButton}
+
       <div className="opponents">
         {game.handCounts
           .filter((h) => h.playerId !== myPlayerId)

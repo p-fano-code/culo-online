@@ -100,6 +100,17 @@ button.secondary:hover:not(:disabled) {
   background: var(--surface-strong);
 }
 
+button.danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  box-shadow: none;
+}
+
+button.danger:hover:not(:disabled) {
+  background: rgba(255, 107, 107, 0.12);
+}
+
 input {
   font: inherit;
   padding: 10px 14px;

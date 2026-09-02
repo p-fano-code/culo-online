@@ -1,5 +1,6 @@
 import type { Server, Socket } from 'socket.io';
 import {
+  closeRoom,
   createRoom,
   findRoomBySocket,
   handleDisconnect,
@@ -12,7 +13,7 @@ import {
 import type { Room, RoomView } from '../rooms/types.js';
 import { broadcastGameState } from '../game/broadcast.js';
 import { createGame } from '../game/gameManager.js';
-import { getGame, setGame } from '../game/gameStore.js';
+import { deleteGame, getGame, setGame } from '../game/gameStore.js';
 
 type CreateRoomPayload = { playerName: string };
 type JoinRoomPayload = { roomCode: string; playerName: string };
@@ -79,6 +80,26 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
   socket.on('room:leave', () => {
     const result = leaveRoom(socket.id);
     if (result && !result.deleted) broadcastRoomUpdate(io, result.room);
+  });
+
+  socket.on('room:close', (_payload: unknown, ack?: Ack<{ error?: string }>) => {
+    const found = findRoomBySocket(socket.id);
+    if (!found) return ack?.({ error: 'ROOM_NOT_FOUND' });
+
+    const result = closeRoom(found.room.code, found.player.id);
+    if ('error' in result) return ack?.(result);
+
+    deleteGame(result.room.code);
+    io.to(result.room.code).emit('room:closed');
+
+    const socketsInRoom = io.sockets.adapter.rooms.get(result.room.code);
+    if (socketsInRoom) {
+      for (const socketId of [...socketsInRoom]) {
+        io.sockets.sockets.get(socketId)?.leave(result.room.code);
+      }
+    }
+
+    ack?.({});
   });
 
   socket.on('disconnect', () => {

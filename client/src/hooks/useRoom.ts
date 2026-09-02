@@ -40,6 +40,17 @@ export function useRoom() {
   }, [setRoom]);
 
   useEffect(() => {
+    const handleRoomClosed = () => {
+      persistSession(null);
+      reset();
+    };
+    socket.on('room:closed', handleRoomClosed);
+    return () => {
+      socket.off('room:closed', handleRoomClosed);
+    };
+  }, [reset]);
+
+  useEffect(() => {
     const stored = loadStoredSession();
     if (!stored) return;
 
@@ -94,5 +105,12 @@ export function useRoom() {
     reset();
   }, [reset]);
 
-  return { room, session, error, createRoom, joinRoom, startRoom, leaveRoom };
+  const closeRoom = useCallback(() => {
+    setError(null);
+    socket.emit('room:close', {}, (response: { error?: string }) => {
+      if (response?.error) setError(response.error);
+    });
+  }, [setError]);
+
+  return { room, session, error, createRoom, joinRoom, startRoom, leaveRoom, closeRoom };
 }

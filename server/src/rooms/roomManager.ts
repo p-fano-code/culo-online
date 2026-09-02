@@ -177,3 +177,24 @@ export function startRoom(
   room.state = 'playing';
   return { room };
 }
+
+export function closeRoom(
+  code: string,
+  requesterId: string,
+): { room: Room } | ErrorResult<'ROOM_NOT_FOUND' | 'NOT_HOST'> {
+  const room = rooms.get(code);
+  if (!room) return { error: 'ROOM_NOT_FOUND' };
+  if (room.hostId !== requesterId) return { error: 'NOT_HOST' };
+
+  for (const player of room.players) {
+    const timerKey = `${code}:${player.id}`;
+    const timer = disconnectTimers.get(timerKey);
+    if (timer) {
+      clearTimeout(timer);
+      disconnectTimers.delete(timerKey);
+    }
+  }
+
+  rooms.delete(code);
+  return { room };
+}

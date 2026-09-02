@@ -19,11 +19,18 @@ interface LobbyProps {
   joinRoom: (roomCode: string, playerName: string) => void;
   startRoom: () => void;
   leaveRoom: () => void;
+  closeRoom: () => void;
 }
 
-export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, leaveRoom }: LobbyProps) {
+export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, leaveRoom, closeRoom }: LobbyProps) {
   const [playerName, setPlayerName] = useState('');
   const [roomCode, setRoomCode] = useState('');
+
+  const handleCloseRoom = () => {
+    if (window.confirm('¿Seguro que quieres finalizar la partida? Se cerrará la sala para todos los jugadores.')) {
+      closeRoom();
+    }
+  };
 
   if (!room || !session) {
     return (
@@ -90,6 +97,11 @@ export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, l
       <button type="button" className="secondary" onClick={leaveRoom}>
         Salir de la sala
       </button>
+      {isHost && (
+        <button type="button" className="danger" onClick={handleCloseRoom}>
+          Finalizar partida
+        </button>
+      )}
       {error && <p className="lobby-error">{ERROR_MESSAGES[error] ?? error}</p>}
     </section>
   );
