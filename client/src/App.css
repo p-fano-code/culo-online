@@ -22,6 +22,20 @@
   font-size: 52px;
 }
 
+#lobby .logo {
+  width: 400px;
+  height: 400px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5));
+  &:hover {
+    width: 500px;
+    height: 500px;
+    transition: width 0.3s ease, height 0.3s ease;
+    rotate: 5deg;
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5)) brightness(1.1);
+  }
+}
+
 .lobby-subtitle {
   color: var(--text-muted);
   margin-top: -8px;

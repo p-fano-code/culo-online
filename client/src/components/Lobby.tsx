@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { RoomView, Session } from '../store/roomStore';
+import logo from '../assets/logo.png';
 
 const ERROR_MESSAGES: Record<string, string> = {
   INVALID_NAME: 'Introduce un nombre y, si te unes a una sala, un código válido.',
@@ -35,7 +36,7 @@ export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, l
   if (!room || !session) {
     return (
       <section id="lobby">
-        <h1>Culo Online</h1>
+        <img src={logo} alt="Culo Online" className="logo" />
         <p className="lobby-subtitle">El clásico juego de cartas español, ahora en tu navegador.</p>
         <div className="lobby-panel">
           <input
