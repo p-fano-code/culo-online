@@ -33,25 +33,28 @@ Player
 Room
   code          string (6 caracteres, ej. "K3F9QX")
   hostId        string
-  players       Player[]        // 2-8 jugadores
-  state         'lobby' | 'playing' | 'finished'
+  players       Player[]        // 2-6 jugadores
+  state         'lobby' | 'playing' | 'exchanging' | 'finished'
   game          GameState | null
 
 Card
-  suit          'oros' | 'copas' | 'espadas' | 'bastos'   // baraja por confirmar
-  rank          number
+  suit          'oros' | 'copas' | 'espadas' | 'bastos'
+  rank          number           // 1-7, 10 (sota), 11 (caballo), 12 (rey)
 
 GameState
   deck          Card[]          // no se envía al cliente
-  pile          Card[]          // cartas jugadas visibles en mesa
+  pile          Card[]          // cartas jugadas visibles en la ronda de mesa actual
+  requiredCount number | null   // cantidad de cartas fijada por la primera jugada de la ronda de mesa
+  passedPlayers string[]        // playerIds que han pasado en la ronda de mesa actual
   turnOrder     string[]        // playerIds
   currentTurn   string
   lastPlay      { playerId, cards } | null
   finishedOrder string[]        // orden en que los jugadores se quedan sin cartas
-  ranking       { presidente, vicepresidente, ..., culo }
+  roles         { playerId: 'presidente' | 'vicepresidente' | 'viceculo' | 'culo' | null }
+  pendingExchange { culoToPresidente, presidenteToCulo, viceculoToVice, viceToViceculo } | null
 ```
 
-**Pendiente de definición**: tipo de baraja (española de 40 o francesa de 52), número de jugadores admitido, y el reglamento exacto de "Culo" a implementar (existen variantes regionales en aspectos como jugar cuatro cartas iguales, cartas que "queman" la mesa, o si se puede jugar sobre un pase). Este bloque condiciona directamente la máquina de estados del servidor y debe cerrarse en un documento de reglas (`docs/REGLAS.md`) antes de implementar la lógica de juego.
+El reglamento completo (orden de valor de cartas, quema de mesa, comodín, intercambio de cartas entre rondas y casos límite por número de jugadores) está definido en [`docs/REGLAS.md`](REGLAS.md).
 
 ## 4. Comunicación en tiempo real
 
@@ -126,9 +129,9 @@ client/
 - [x] Dependencias del servidor instaladas: `express`, `socket.io`, `cors`, `typescript`.
 - [x] Cliente inicializado con Vite (React + TypeScript) y dependencias: `socket.io-client`, `zustand`, `framer-motion`.
 - [x] Control de versiones inicializado (`git init`) con `.gitignore` para el monorepo.
-- [ ] Reglamento de "Culo" a implementar (`docs/REGLAS.md`).
-- [ ] Servidor mínimo (Express + Socket.io) con healthcheck.
-- [ ] Cliente conectado al servidor por socket.
-- [ ] Flujo de sala completo (crear / unirse / lobby).
-- [ ] Máquina de estados del juego en el servidor.
+- [x] Reglamento de "Culo" definido (`docs/REGLAS.md`).
+- [x] Servidor mínimo (Express + Socket.io) con healthcheck.
+- [x] Cliente conectado al servidor por socket (verificado en `localhost:5173`).
+- [x] Flujo de sala completo (crear / unirse / lobby, con reconexión por token y expulsión tras timeout de desconexión).
+- [x] Máquina de estados del juego en el servidor (reparto, turnos, jugadas válidas, comodín/quema del 2, quema por pase general, fin de ronda y asignación de roles). Pendiente: intercambio de cartas entre rondas y repetición de rondas (sección 6 y punto pendiente de `REGLAS.md`).
 - [ ] Interfaz de mesa y cartas.
