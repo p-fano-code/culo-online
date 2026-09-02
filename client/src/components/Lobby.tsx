@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useRoom } from '../hooks/useRoom';
+import type { RoomView, Session } from '../store/roomStore';
 
 const ERROR_MESSAGES: Record<string, string> = {
   INVALID_NAME: 'Introduce un nombre y, si te unes a una sala, un código válido.',
@@ -11,8 +11,17 @@ const ERROR_MESSAGES: Record<string, string> = {
   INVALID_TOKEN: 'No se ha podido recuperar la sesión de esa sala.',
 };
 
-export function Lobby() {
-  const { room, session, error, createRoom, joinRoom, startRoom, leaveRoom } = useRoom();
+interface LobbyProps {
+  room: RoomView | null;
+  session: Session | null;
+  error: string | null;
+  createRoom: (playerName: string) => void;
+  joinRoom: (roomCode: string, playerName: string) => void;
+  startRoom: () => void;
+  leaveRoom: () => void;
+}
+
+export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, leaveRoom }: LobbyProps) {
   const [playerName, setPlayerName] = useState('');
   const [roomCode, setRoomCode] = useState('');
 

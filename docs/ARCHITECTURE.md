@@ -134,4 +134,4 @@ client/
 - [x] Cliente conectado al servidor por socket (verificado en `localhost:5173`).
 - [x] Flujo de sala completo (crear / unirse / lobby, con reconexión por token y expulsión tras timeout de desconexión).
 - [x] Máquina de estados del juego en el servidor (reparto, turnos, jugadas válidas, comodín/quema del 2, quema por pase general, fin de ronda y asignación de roles). Pendiente: intercambio de cartas entre rondas y repetición de rondas (sección 6 y punto pendiente de `REGLAS.md`).
-- [ ] Interfaz de mesa y cartas.
+- [x] Interfaz de mesa y cartas (`Card.tsx`, `Hand.tsx`, `Table.tsx`), verificada en navegador real con Playwright.
