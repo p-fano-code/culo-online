@@ -29,7 +29,8 @@ export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, l
     return (
       <section id="lobby">
         <h1>Culo Online</h1>
-        <div className="lobby-form">
+        <p className="lobby-subtitle">El clásico juego de cartas español, ahora en tu navegador.</p>
+        <div className="lobby-panel">
           <input
             type="text"
             placeholder="Tu nombre"
@@ -40,6 +41,7 @@ export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, l
           <button type="button" onClick={() => createRoom(playerName)} disabled={!playerName.trim()}>
             Crear sala
           </button>
+          <div className="lobby-divider">o unirme a una</div>
           <div className="lobby-join">
             <input
               type="text"
@@ -66,8 +68,9 @@ export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, l
 
   return (
     <section id="lobby">
-      <h1>Sala {room.code}</h1>
-      <p>Comparte este código con el resto de jugadores.</p>
+      <h1>Sala de espera</h1>
+      <div className="room-code-badge">{room.code}</div>
+      <p className="lobby-subtitle">Comparte este código con el resto de jugadores.</p>
       <ul className="player-list">
         {room.players.map((player) => (
           <li key={player.id}>
@@ -82,9 +85,9 @@ export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, l
           Empezar partida
         </button>
       ) : (
-        <p>Esperando a que el anfitrión empiece la partida...</p>
+        <p className="lobby-subtitle">Esperando a que el anfitrión empiece la partida...</p>
       )}
-      <button type="button" onClick={leaveRoom}>
+      <button type="button" className="secondary" onClick={leaveRoom}>
         Salir de la sala
       </button>
       {error && <p className="lobby-error">{ERROR_MESSAGES[error] ?? error}</p>}

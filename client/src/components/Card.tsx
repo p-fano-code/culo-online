@@ -1,28 +1,35 @@
-import { motion } from 'framer-motion';
+import { motion, type MotionStyle } from 'framer-motion';
 import type { Card as CardType } from '../store/gameStore';
-import { rankLabel, suitColor, suitLabel, suitSymbol } from '../game/cardDisplay';
+import { rankLabel, suitColor, suitLabel } from '../game/cardDisplay';
+import { SuitIcon } from './SuitIcon';
 import './Card.css';
 
 interface CardProps {
   card: CardType;
   selected?: boolean;
   onClick?: () => void;
+  style?: MotionStyle;
 }
 
-export function Card({ card, selected, onClick }: CardProps) {
+export function Card({ card, selected, onClick, style }: CardProps) {
+  const label = `${rankLabel(card.rank)} de ${suitLabel(card.suit)}`;
+
   return (
-    <motion.button
-      type="button"
+    <motion.div
       layout
-      className={`playing-card${selected ? ' selected' : ''}${onClick ? '' : ' inert'}`}
-      style={{ color: suitColor(card.suit) }}
+      className={`playing-card${selected ? ' selected' : ''}${onClick ? ' clickable' : ''}`}
+      style={{ color: suitColor(card.suit), ...style }}
       onClick={onClick}
-      disabled={!onClick}
-      whileHover={onClick ? { y: -8 } : undefined}
-      title={`${rankLabel(card.rank)} de ${suitLabel(card.suit)}`}
+      whileHover={onClick ? { y: -28, rotate: 0, scale: 1.08, zIndex: 30 } : undefined}
     >
-      <span className="rank">{rankLabel(card.rank)}</span>
-      <span className="suit">{suitSymbol(card.suit)}</span>
-    </motion.button>
+      <div className="playing-card-face">
+        <span className="corner top">{rankLabel(card.rank)}</span>
+        <span className="pip">
+          <SuitIcon suit={card.suit} />
+        </span>
+        <span className="corner bottom">{rankLabel(card.rank)}</span>
+      </div>
+      <span className="card-caption">{label}</span>
+    </motion.div>
   );
 }

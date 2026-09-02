@@ -10,20 +10,50 @@
 #lobby {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  place-content: center;
-  place-items: center;
+  align-items: center;
+  gap: 20px;
   flex-grow: 1;
+  place-content: center;
   padding: 24px;
   text-align: center;
 }
 
-.lobby-form {
+#lobby h1 {
+  font-size: 52px;
+}
+
+.lobby-subtitle {
+  color: var(--text-muted);
+  margin-top: -8px;
+}
+
+.lobby-panel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
-  max-width: 320px;
+  max-width: 340px;
+  padding: 28px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.lobby-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.lobby-divider::before,
+.lobby-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
 }
 
 .lobby-join {
@@ -32,7 +62,20 @@
 
   input {
     flex: 1;
+    min-width: 0;
   }
+}
+
+.room-code-badge {
+  font-family: var(--heading);
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  background: var(--surface);
+  border: 1px dashed var(--accent);
+  border-radius: 14px;
+  padding: 12px 20px;
+  color: var(--accent-strong);
 }
 
 .player-list {
@@ -42,10 +85,19 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.player-list li {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 
 .lobby-error {
-  color: #e5484d;
+  color: var(--danger);
 }
 
 #table {
@@ -68,14 +120,16 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--border, #ccc);
+  padding: 8px 18px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-family: var(--heading);
 }
 
 .opponent.current {
-  border-color: currentColor;
-  box-shadow: 0 0 0 2px currentColor;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .pile {
@@ -93,22 +147,26 @@
 }
 
 .ranking {
-  max-width: 320px;
+  max-width: 340px;
   margin: 0 auto;
+  text-align: left;
+
+  li {
+    padding: 6px 0;
+  }
 }
 
 .hand {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 16px 24px 24px;
+  gap: 16px;
+  padding: 48px 24px 28px;
 }
 
 .hand-cards {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  align-items: flex-end;
   justify-content: center;
 }
 

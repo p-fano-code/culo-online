@@ -1,37 +1,65 @@
 .playing-card {
-  width: 56px;
-  height: 80px;
-  border-radius: 8px;
-  border: 1px solid var(--border, #ccc);
-  background: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 4px;
-  font-weight: 600;
+  user-select: none;
+  position: relative;
+}
+
+.playing-card.clickable {
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
-.playing-card.inert {
-  cursor: default;
+.playing-card-face {
+  width: 66px;
+  height: 96px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #fffdf7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 5px;
+  font-weight: 700;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
 }
 
-.playing-card:disabled {
-  cursor: default;
+.playing-card.selected .playing-card-face {
+  box-shadow: 0 0 0 3px currentColor, 0 5px 12px rgba(0, 0, 0, 0.45);
 }
 
-.playing-card.selected {
-  border-color: currentColor;
-  box-shadow: 0 -6px 0 -2px currentColor;
-  transform: translateY(-8px);
+.playing-card .corner {
+  font-size: 13px;
+  line-height: 1;
+  align-self: flex-start;
 }
 
-.playing-card .rank {
-  font-size: 15px;
+.playing-card .corner.bottom {
+  align-self: flex-end;
+  transform: rotate(180deg);
 }
 
-.playing-card .suit {
-  font-size: 18px;
+.playing-card .pip svg {
+  width: 26px;
+  height: 26px;
+}
+
+.card-caption {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  text-align: center;
+}
+
+.hand-cards .card-caption {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.hand-cards .playing-card:hover .card-caption,
+.hand-cards .playing-card.selected .card-caption {
+  opacity: 1;
 }

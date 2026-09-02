@@ -17,6 +17,7 @@ function App() {
     const handleDisconnect = () => setConnected(false);
 
     // sincroniza el estado por si el socket ya se conectó antes de montar este efecto (StrictMode, o una conexión muy rápida)
+    // oxlint-disable-next-line react/set-state-in-effect
     setConnected(socket.connected);
 
     socket.on('connect', handleConnect);
