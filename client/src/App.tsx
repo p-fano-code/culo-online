@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { socket } from './socket';
 import { Lobby } from './components/Lobby';
 import { Table } from './components/Table';
-import { Hand } from './components/Hand';
 import { useRoom } from './hooks/useRoom';
 import { useGame } from './hooks/useGame';
 import './App.css';
@@ -60,23 +59,20 @@ function App() {
     );
   }
 
-  const isMyTurn = game.currentTurn === session.playerId;
-  const canPass = isMyTurn && game.requiredCount !== null;
+  const canPass = game.currentTurn === session.playerId && game.requiredCount !== null;
 
   return (
-    <>
-      <Table
-        game={game}
-        players={room.players}
-        myPlayerId={session.playerId}
-        isHost={room.hostId === session.playerId}
-        error={gameError}
-        closeRoom={closeRoom}
-      />
-      {game.phase === 'playing' && (
-        <Hand cards={game.hand} isMyTurn={isMyTurn} canPass={canPass} onPlay={playCards} onPass={pass} />
-      )}
-    </>
+    <Table
+      game={game}
+      players={room.players}
+      myPlayerId={session.playerId}
+      isHost={room.hostId === session.playerId}
+      error={gameError}
+      closeRoom={closeRoom}
+      canPass={canPass}
+      onPlay={playCards}
+      onPass={pass}
+    />
   );
 }
 

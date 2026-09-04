@@ -27,10 +27,14 @@
   height: 400px;
   object-fit: contain;
   filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5));
+  -webkit-transition: all 1.5s;
+  transition: all 1.5s;
   &:hover {
     width: 500px;
     height: 500px;
-    transition: width 0.3s ease, height 0.3s ease;
+    transform: translate(1.2cm);
+    transition: all 1.5s;
+    -webkit-transition: all 1.5s;
     rotate: 5deg;
     filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5)) brightness(1.1);
   }
@@ -151,13 +155,35 @@
   box-shadow: 0 0 0 2px var(--accent);
 }
 
+.game-surface {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 1;
+  background: url('./assets/mesa.png') center center / contain no-repeat;
+  padding: 24px 24px 12px;
+}
+
+.table-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 28px;
+  flex-grow: 1;
+  flex-wrap: wrap;
+}
+
 .pile {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  flex-grow: 1;
-  justify-content: center;
+  min-width: 140px;
+}
+
+.pile-placeholder {
+  color: var(--text-muted);
 }
 
 .pile-cards {
@@ -180,7 +206,7 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding: 48px 24px 28px;
+  padding: 56px 24px 28px;
 }
 
 .hand-cards {

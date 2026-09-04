@@ -1,5 +1,7 @@
 import { Card } from './Card';
-import type { GameView, Role } from '../store/gameStore';
+import { Hand } from './Hand';
+import { PirateNarrator } from './PirateNarrator';
+import type { Card as CardType, GameView, Role } from '../store/gameStore';
 import type { PlayerView } from '../store/roomStore';
 
 interface TableProps {
@@ -9,6 +11,9 @@ interface TableProps {
   isHost: boolean;
   error: string | null;
   closeRoom: () => void;
+  canPass: boolean;
+  onPlay: (cards: CardType[]) => void;
+  onPass: () => void;
 }
 
 const ROLE_LABELS: Record<Exclude<Role, null>, string> = {
@@ -22,7 +27,7 @@ function playerName(players: PlayerView[], id: string): string {
   return players.find((p) => p.id === id)?.name ?? id;
 }
 
-export function Table({ game, players, myPlayerId, isHost, error, closeRoom }: TableProps) {
+export function Table({ game, players, myPlayerId, isHost, error, closeRoom, canPass, onPlay, onPass }: TableProps) {
   const handleCloseRoom = () => {
     if (window.confirm('¿Seguro que quieres finalizar la partida? Se cerrará la sala para todos los jugadores.')) {
       closeRoom();
@@ -55,6 +60,8 @@ export function Table({ game, players, myPlayerId, isHost, error, closeRoom }: T
     );
   }
 
+  const isMyTurn = game.currentTurn === myPlayerId;
+
   return (
     <section id="table">
       {closeButton}
@@ -70,22 +77,28 @@ export function Table({ game, players, myPlayerId, isHost, error, closeRoom }: T
           ))}
       </div>
 
-      <div className="pile">
-        {game.lastPlay ? (
-          <>
-            <p>{playerName(players, game.lastPlay.playerId)} jugó:</p>
-            <div className="pile-cards">
-              {game.lastPlay.cards.map((card) => (
-                <Card key={`${card.suit}-${card.rank}`} card={card} />
-              ))}
-            </div>
-          </>
-        ) : (
-          <p>Mesa libre — el turno abre la ronda.</p>
-        )}
-      </div>
+      <div className="game-surface">
+        <div className="table-main">
+          <PirateNarrator errorCode={error} isMyTurn={isMyTurn} currentPlayerName={playerName(players, game.currentTurn)} />
 
-      {error && <p className="lobby-error">{error}</p>}
+          <div className="pile">
+            {game.lastPlay ? (
+              <>
+                <p>{playerName(players, game.lastPlay.playerId)} jugó:</p>
+                <div className="pile-cards">
+                  {game.lastPlay.cards.map((card) => (
+                    <Card key={`${card.suit}-${card.rank}`} card={card} />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="pile-placeholder">Mesa libre</p>
+            )}
+          </div>
+        </div>
+
+        <Hand cards={game.hand} isMyTurn={isMyTurn} canPass={canPass} onPlay={onPlay} onPass={onPass} />
+      </div>
     </section>
   );
 }

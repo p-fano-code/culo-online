@@ -1,0 +1,64 @@
+.pirate-narrator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.pirate-avatar {
+  min-width: 30%;
+  width: 40%;
+  transition: width 0.3s ease;
+  height: auto;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
+}
+
+.pirate-bubble {
+  position: relative;
+  background: #fdf6e3;
+  color: #241705;
+  font-family: var(--heading);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.3;
+  padding: 10px 16px;
+  border-radius: 16px;
+  border: 2px solid #241705;
+  max-width: 220px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.pirate-bubble.pirate-bubble-error {
+  border-color: #7a1f17;
+  background: #fbe4e1;
+}
+
+.pirate-bubble::before,
+.pirate-bubble::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 9px solid transparent;
+}
+
+.pirate-bubble::after {
+  left: -8px;
+  border-right-color: #fdf6e3;
+}
+
+.pirate-bubble.pirate-bubble-error::after {
+  border-right-color: #fbe4e1;
+}
+
+@media (max-width: 640px) {
+  .pirate-avatar {
+    width: 60px;
+  }
+
+  .pirate-bubble {
+    font-size: 12px;
+    max-width: 160px;
+    padding: 8px 12px;
+  }
+}
