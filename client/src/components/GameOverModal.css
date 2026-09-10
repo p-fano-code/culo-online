@@ -1,0 +1,134 @@
+.gameover-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 250;
+  padding: 20px;
+}
+
+.gameover-modal {
+  background: var(--bg-felt-1);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  max-width: 420px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 28px 24px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.gameover-modal h1 {
+  font-size: 30px;
+  margin-bottom: 16px;
+}
+
+.gameover-pirate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.gameover-pirate .pirate-avatar {
+  width: 110px;
+  height: auto;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
+}
+
+.gameover-pirate .pirate-bubble {
+  position: relative;
+  background: #fdf6e3;
+  color: #241705;
+  font-family: var(--heading);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.35;
+  padding: 10px 18px;
+  border-radius: 16px;
+  border: 2px solid #241705;
+  max-width: 280px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.podium {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.podium-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.podium-rank {
+  font-family: var(--heading);
+  font-weight: 700;
+  width: 28px;
+  text-align: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.podium-name {
+  flex-grow: 1;
+  font-weight: 600;
+}
+
+.podium-role {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  white-space: nowrap;
+}
+
+.podium-row.podium-me {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.podium-row.podium-presidente {
+  background: linear-gradient(90deg, rgba(240, 180, 41, 0.25), transparent);
+}
+
+.podium-row.podium-presidente .podium-rank {
+  color: var(--accent-strong);
+}
+
+.podium-row.podium-vicepresidente {
+  background: linear-gradient(90deg, rgba(240, 180, 41, 0.12), transparent);
+}
+
+.podium-row.podium-viceculo {
+  background: linear-gradient(90deg, rgba(255, 149, 0, 0.16), transparent);
+}
+
+.podium-row.podium-culo {
+  background: linear-gradient(90deg, rgba(255, 107, 107, 0.2), transparent);
+}
+
+.gameover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+}

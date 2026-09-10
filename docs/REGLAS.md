@@ -37,6 +37,12 @@ Un jugador que pasa queda fuera de la ronda de juego actual (no vuelve a poder j
 
 La primera jugada de una ronda de mesa la hace libremente el jugador en turno: cualquier valor, con la cantidad de cartas que decida (1 a 4), y esa cantidad queda fijada como obligatoria para el resto de esa ronda de mesa.
 
+### Salto de turno
+
+Si un jugador juega una carta (o cartas) del mismo valor que la jugada anterior sobre la mesa, se salta el turno del siguiente jugador activo: el turno pasa directamente al jugador posterior a ese. El jugador saltado no llega a actuar en ese ciclo, pero sigue en la partida con normalidad a partir de su siguiente turno.
+
+Esta mecánica no se aplica al 2 (que ya tiene su propio efecto de quema, ver más abajo) ni a la jugada que abre una ronda de mesa (no hay "jugada anterior" con la que comparar).
+
 ### El 2 como comodín
 
 El 2 puede jugarse en cualquier turno, sea cual sea la última jugada sobre la mesa, sin necesidad de igualar cantidad de cartas ni superar el valor de la jugada anterior.

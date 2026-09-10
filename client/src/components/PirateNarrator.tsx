@@ -9,6 +9,8 @@ interface PirateNarratorProps {
   errorCode: string | null;
   isMyTurn: boolean;
   currentPlayerName: string;
+  skippedPlayerId: string | null;
+  myPlayerId: string;
 }
 
 const ERROR_DISPLAY_MS = 3500;
@@ -30,7 +32,13 @@ function toPirateSpeech(code: string): string {
   return ERROR_PHRASES[code] ?? '¡Eso no se puede hacer!';
 }
 
-export function PirateNarrator({ errorCode, isMyTurn, currentPlayerName }: PirateNarratorProps) {
+export function PirateNarrator({
+  errorCode,
+  isMyTurn,
+  currentPlayerName,
+  skippedPlayerId,
+  myPlayerId,
+}: PirateNarratorProps) {
   const [prevCode, setPrevCode] = useState<string | null>(null);
   const [errorExpired, setErrorExpired] = useState(false);
 
@@ -46,13 +54,30 @@ export function PirateNarrator({ errorCode, isMyTurn, currentPlayerName }: Pirat
   }, [errorCode, errorExpired]);
 
   const showingError = Boolean(errorCode) && !errorExpired;
+  const showingSkip = !showingError && skippedPlayerId !== null;
+  const wasSkippedMe = skippedPlayerId === myPlayerId;
 
-  const image = showingError ? pirateError : isMyTurn ? pirateHappy : pirateWait;
+  const image = showingError
+    ? pirateError
+    : showingSkip
+      ? wasSkippedMe
+        ? pirateError
+        : pirateHappy
+      : isMyTurn
+        ? pirateHappy
+        : pirateWait;
+
   const message = showingError
     ? toPirateSpeech(errorCode as string)
-    : isMyTurn
-      ? '¡Es tu turno, adelante!'
-      : `Es el turno de ${currentPlayerName}...`;
+    : showingSkip
+      ? wasSkippedMe
+        ? '¡Te han saltado!'
+        : '¡SALTO!'
+      : isMyTurn
+        ? '¡Es tu turno, adelante!'
+        : `Es el turno de ${currentPlayerName}...`;
+
+  const bubbleModifier = showingError ? ' pirate-bubble-error' : showingSkip ? ' pirate-bubble-skip' : '';
 
   return (
     <div className="pirate-narrator">
@@ -71,7 +96,7 @@ export function PirateNarrator({ errorCode, isMyTurn, currentPlayerName }: Pirat
       <AnimatePresence mode="wait">
         <motion.div
           key={message}
-          className={`pirate-bubble${showingError ? ' pirate-bubble-error' : ''}`}
+          className={`pirate-bubble${bubbleModifier}`}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}

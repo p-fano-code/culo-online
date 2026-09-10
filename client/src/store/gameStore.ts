@@ -12,6 +12,10 @@ export interface Play {
   cards: Card[];
 }
 
+export interface Skip {
+  skippedPlayerId: string;
+}
+
 export type Role = 'presidente' | 'vicepresidente' | 'viceculo' | 'culo' | null;
 
 export interface HandCount {
@@ -25,6 +29,7 @@ export interface GameView {
   requiredCount: number | null;
   currentTurn: string;
   lastPlay: Play | null;
+  lastSkip: Skip | null;
   finishedOrder: string[];
   roles: Record<string, Role>;
   phase: 'playing' | 'finished';

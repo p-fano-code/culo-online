@@ -1,6 +1,11 @@
 import { createDeck, isWild, rankValue, shuffle } from './deck.js';
 import type { Card, GameState, Role } from './types.js';
 
+interface Advance {
+  next: string | null;
+  skippedPlayerId: string | null;
+}
+
 type ErrorResult = { ok: false; error: string };
 type SuccessResult = { ok: true; state: GameState };
 export type PlayResult = SuccessResult | ErrorResult;
@@ -41,6 +46,7 @@ export function createGame(playerIds: string[], previousCuloId?: string): GameSt
     requiredCount: null,
     passedPlayers: [],
     lastPlay: null,
+    lastSkip: null,
     finishedOrder: [],
     roles: Object.fromEntries(playerIds.map((id) => [id, null])),
     phase: 'playing',
@@ -84,6 +90,20 @@ function findNextActive(
     return candidate;
   }
   return null;
+}
+
+/**
+ * Avanza el turno desde `fromId`. Si `applySkip` es true (se jugó una carta del mismo valor
+ * que la anterior), se salta un jugador activo adicional: REGLAS.md — mecánica de salto.
+ */
+function advanceTurn(state: GameState, fromId: string, applySkip: boolean): Advance {
+  const firstHop = findNextActive(state, fromId, { skipPassed: true });
+  if (!applySkip || firstHop === null) {
+    return { next: firstHop, skippedPlayerId: null };
+  }
+
+  const secondHop = findNextActive(state, firstHop, { skipPassed: true });
+  return { next: secondHop ?? firstHop, skippedPlayerId: firstHop };
 }
 
 function assignRoles(finishedOrder: string[]): Record<string, Role> {
@@ -141,6 +161,9 @@ export function playCards(state: GameState, playerId: string, cards: Card[]): Pl
     }
   }
 
+  // Jugar el mismo valor que la jugada anterior salta el turno del siguiente jugador (REGLAS.md).
+  const causesSkip = !wild && state.requiredCount !== null && state.lastPlay !== null && rank === state.lastPlay.cards[0].rank;
+
   const nextHand = removeCards(hand, cards);
   const hands = { ...state.hands, [playerId]: nextHand };
   const finished = nextHand.length === 0;
@@ -149,6 +172,7 @@ export function playCards(state: GameState, playerId: string, cards: Card[]): Pl
     ...state,
     hands,
     lastPlay: { playerId, cards },
+    lastSkip: null,
     passedPlayers: [],
   };
 
@@ -166,12 +190,24 @@ export function playCards(state: GameState, playerId: string, cards: Card[]): Pl
     }
 
     const stateWithFinishedOrder = { ...working, finishedOrder };
-    const next = findNextActive(stateWithFinishedOrder, playerId, { skipPassed: true });
-    return { ok: true, state: { ...stateWithFinishedOrder, currentTurn: next ?? remainingActive[0] } };
+    const { next, skippedPlayerId } = advanceTurn(stateWithFinishedOrder, playerId, causesSkip);
+    return {
+      ok: true,
+      state: {
+        ...stateWithFinishedOrder,
+        currentTurn: next ?? remainingActive[0],
+        lastSkip: skippedPlayerId ? { skippedPlayerId } : null,
+      },
+    };
   }
 
-  const next = wild ? playerId : findNextActive(working, playerId, { skipPassed: true });
-  return { ok: true, state: { ...working, currentTurn: next ?? playerId } };
+  const { next, skippedPlayerId } = wild
+    ? { next: playerId, skippedPlayerId: null }
+    : advanceTurn(working, playerId, causesSkip);
+  return {
+    ok: true,
+    state: { ...working, currentTurn: next ?? playerId, lastSkip: skippedPlayerId ? { skippedPlayerId } : null },
+  };
 }
 
 export function passTurn(state: GameState, playerId: string): PlayResult {
@@ -200,11 +236,12 @@ export function passTurn(state: GameState, playerId: string): PlayResult {
         requiredCount: null,
         passedPlayers: [],
         lastPlay: null,
+        lastSkip: null,
         currentTurn: nextLeader ?? playerId,
       },
     };
   }
 
   const next = findNextActive(state, playerId, { skipPassed: true });
-  return { ok: true, state: { ...state, passedPlayers, currentTurn: next ?? playerId } };
+  return { ok: true, state: { ...state, passedPlayers, lastSkip: null, currentTurn: next ?? playerId } };
 }

@@ -1,7 +1,8 @@
 import { Card } from './Card';
 import { Hand } from './Hand';
 import { PirateNarrator } from './PirateNarrator';
-import type { Card as CardType, GameView, Role } from '../store/gameStore';
+import { GameOverModal } from './GameOverModal';
+import type { Card as CardType, GameView } from '../store/gameStore';
 import type { PlayerView } from '../store/roomStore';
 
 interface TableProps {
@@ -11,51 +12,46 @@ interface TableProps {
   isHost: boolean;
   error: string | null;
   closeRoom: () => void;
+  leaveRoom: () => void;
   canPass: boolean;
   onPlay: (cards: CardType[]) => void;
   onPass: () => void;
 }
 
-const ROLE_LABELS: Record<Exclude<Role, null>, string> = {
-  presidente: 'Presidente',
-  vicepresidente: 'Vicepresidente',
-  viceculo: 'Viceculo',
-  culo: 'Culo',
-};
-
 function playerName(players: PlayerView[], id: string): string {
   return players.find((p) => p.id === id)?.name ?? id;
 }
 
-export function Table({ game, players, myPlayerId, isHost, error, closeRoom, canPass, onPlay, onPass }: TableProps) {
+export function Table({
+  game,
+  players,
+  myPlayerId,
+  isHost,
+  error,
+  closeRoom,
+  leaveRoom,
+  canPass,
+  onPlay,
+  onPass,
+}: TableProps) {
   const handleCloseRoom = () => {
     if (window.confirm('¿Seguro que quieres finalizar la partida? Se cerrará la sala para todos los jugadores.')) {
       closeRoom();
     }
   };
 
-  const closeButton = isHost ? (
-    <button type="button" className="danger table-close" onClick={handleCloseRoom}>
-      Finalizar partida
-    </button>
-  ) : null;
-
   if (game.phase === 'finished') {
     return (
       <section id="table">
-        {closeButton}
-        <h1>Partida terminada</h1>
-        <ol className="ranking">
-          {game.finishedOrder.map((id) => {
-            const role = game.roles[id];
-            return (
-              <li key={id}>
-                {playerName(players, id)}
-                {role ? ` — ${ROLE_LABELS[role]}` : ''}
-              </li>
-            );
-          })}
-        </ol>
+        <GameOverModal
+          finishedOrder={game.finishedOrder}
+          roles={game.roles}
+          players={players}
+          myPlayerId={myPlayerId}
+          isHost={isHost}
+          onLeaveRoom={leaveRoom}
+          onCloseRoom={handleCloseRoom}
+        />
       </section>
     );
   }
@@ -64,7 +60,11 @@ export function Table({ game, players, myPlayerId, isHost, error, closeRoom, can
 
   return (
     <section id="table">
-      {closeButton}
+      {isHost && (
+        <button type="button" className="danger table-close" onClick={handleCloseRoom}>
+          Finalizar partida
+        </button>
+      )}
 
       <div className="opponents">
         {game.handCounts
@@ -79,7 +79,13 @@ export function Table({ game, players, myPlayerId, isHost, error, closeRoom, can
 
       <div className="game-surface">
         <div className="table-main">
-          <PirateNarrator errorCode={error} isMyTurn={isMyTurn} currentPlayerName={playerName(players, game.currentTurn)} />
+          <PirateNarrator
+            errorCode={error}
+            isMyTurn={isMyTurn}
+            currentPlayerName={playerName(players, game.currentTurn)}
+            skippedPlayerId={game.lastSkip?.skippedPlayerId ?? null}
+            myPlayerId={myPlayerId}
+          />
 
           <div className="pile">
             {game.lastPlay ? (

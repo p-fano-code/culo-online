@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { socket } from './socket';
 import { Lobby } from './components/Lobby';
 import { Table } from './components/Table';
+import { RulesModal } from './components/RulesModal';
 import { useRoom } from './hooks/useRoom';
 import { useGame } from './hooks/useGame';
 import './App.css';
 
 function App() {
   const [connected, setConnected] = useState(socket.connected);
+  const [rulesOpen, setRulesOpen] = useState(false);
   const { room, session, error: roomError, createRoom, joinRoom, startRoom, leaveRoom, closeRoom } = useRoom();
   const { game, error: gameError, playCards, pass } = useGame();
 
@@ -28,16 +30,16 @@ function App() {
     };
   }, []);
 
+  let content: React.ReactNode;
+
   if (!connected) {
-    return (
+    content = (
       <section id="center">
         <p>Conectando con el servidor...</p>
       </section>
     );
-  }
-
-  if (!room || !session || room.state === 'lobby') {
-    return (
+  } else if (!room || !session || room.state === 'lobby') {
+    content = (
       <Lobby
         room={room}
         session={session}
@@ -49,30 +51,43 @@ function App() {
         closeRoom={closeRoom}
       />
     );
-  }
-
-  if (!game) {
-    return (
+  } else if (!game) {
+    content = (
       <section id="center">
         <p>Cargando partida...</p>
       </section>
     );
+  } else {
+    const canPass = game.currentTurn === session.playerId && game.requiredCount !== null;
+    content = (
+      <Table
+        game={game}
+        players={room.players}
+        myPlayerId={session.playerId}
+        isHost={room.hostId === session.playerId}
+        error={gameError}
+        closeRoom={closeRoom}
+        leaveRoom={leaveRoom}
+        canPass={canPass}
+        onPlay={playCards}
+        onPass={pass}
+      />
+    );
   }
 
-  const canPass = game.currentTurn === session.playerId && game.requiredCount !== null;
-
   return (
-    <Table
-      game={game}
-      players={room.players}
-      myPlayerId={session.playerId}
-      isHost={room.hostId === session.playerId}
-      error={gameError}
-      closeRoom={closeRoom}
-      canPass={canPass}
-      onPlay={playCards}
-      onPass={pass}
-    />
+    <>
+      <button
+        type="button"
+        className="help-button"
+        onClick={() => setRulesOpen(true)}
+        aria-label="Reglas del juego"
+      >
+        ?
+      </button>
+      <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
+      {content}
+    </>
   );
 }
 

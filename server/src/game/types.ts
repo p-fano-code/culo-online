@@ -12,6 +12,10 @@ export interface Play {
   cards: Card[];
 }
 
+export interface Skip {
+  skippedPlayerId: string;
+}
+
 export type GamePhase = 'playing' | 'finished';
 
 export interface GameState {
@@ -22,6 +26,7 @@ export interface GameState {
   requiredCount: number | null;
   passedPlayers: string[];
   lastPlay: Play | null;
+  lastSkip: Skip | null; // refleja si la última jugada (y solo esa) provocó un salto de turno
   finishedOrder: string[];
   roles: Record<string, Role>;
   phase: GamePhase;

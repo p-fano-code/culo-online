@@ -6,8 +6,7 @@
 }
 
 .pirate-avatar {
-  min-width: 30%;
-  width: 40%;
+  width: clamp(72px, 20vw, 100px);
   transition: width 0.3s ease;
   height: auto;
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
@@ -24,13 +23,18 @@
   padding: 10px 16px;
   border-radius: 16px;
   border: 2px solid #241705;
-  max-width: 220px;
+  max-width: min(220px, 58vw);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 .pirate-bubble.pirate-bubble-error {
   border-color: #7a1f17;
   background: #fbe4e1;
+}
+
+.pirate-bubble.pirate-bubble-skip {
+  border-color: var(--accent);
+  background: #fdf1d8;
 }
 
 .pirate-bubble::before,
@@ -51,14 +55,13 @@
   border-right-color: #fbe4e1;
 }
 
-@media (max-width: 640px) {
-  .pirate-avatar {
-    width: 60px;
-  }
+.pirate-bubble.pirate-bubble-skip::after {
+  border-right-color: #fdf1d8;
+}
 
+@media (max-width: 400px) {
   .pirate-bubble {
     font-size: 12px;
-    max-width: 160px;
     padding: 8px 12px;
   }
 }

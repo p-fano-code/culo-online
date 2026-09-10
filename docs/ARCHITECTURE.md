@@ -49,6 +49,7 @@ GameState
   turnOrder     string[]        // playerIds
   currentTurn   string
   lastPlay      { playerId, cards } | null
+  lastSkip      { skippedPlayerId } | null   // solo refleja si la última jugada causó un salto de turno
   finishedOrder string[]        // orden en que los jugadores se quedan sin cartas
   roles         { playerId: 'presidente' | 'vicepresidente' | 'viceculo' | 'culo' | null }
   pendingExchange { culoToPresidente, presidenteToCulo, viceculoToVice, viceToViceculo } | null

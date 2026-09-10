@@ -1,4 +1,4 @@
-import type { Card, GamePhase, GameState, Play, Role } from './types.js';
+import type { Card, GamePhase, GameState, Play, Role, Skip } from './types.js';
 
 export interface HandCount {
   playerId: string;
@@ -11,6 +11,7 @@ export interface GameView {
   requiredCount: number | null;
   currentTurn: string;
   lastPlay: Play | null;
+  lastSkip: Skip | null;
   finishedOrder: string[];
   roles: Record<string, Role>;
   phase: GamePhase;
@@ -26,6 +27,7 @@ export function toGameView(state: GameState, playerId: string): GameView {
     requiredCount: state.requiredCount,
     currentTurn: state.currentTurn,
     lastPlay: state.lastPlay,
+    lastSkip: state.lastSkip,
     finishedOrder: state.finishedOrder,
     roles: state.roles,
     phase: state.phase,
