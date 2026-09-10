@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type TouchEvent } from 'react';
 import { Card } from './Card';
 import { cardKey, sortHand } from '../game/cardDisplay';
 import type { Card as CardType } from '../store/gameStore';
@@ -42,6 +42,15 @@ function getHoverBoost(index: number, hoveredIndex: number | null): number {
   return 0;
 }
 
+/** En táctil no existe el hover del ratón: se simula leyendo qué carta hay bajo el dedo mientras se desliza. */
+function getCardIndexAtPoint(x: number, y: number): number | null {
+  const el = document.elementFromPoint(x, y);
+  const cardEl = el instanceof Element ? el.closest('[data-card-index]') : null;
+  if (!cardEl) return null;
+  const value = cardEl.getAttribute('data-card-index');
+  return value === null ? null : Number(value);
+}
+
 export function Hand({ cards, isMyTurn, canPass, onPlay, onPass }: HandProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -64,11 +73,31 @@ export function Hand({ cards, isMyTurn, canPass, onPlay, onPass }: HandProps) {
     if (selectedCards.length === 0) return;
     onPlay(selectedCards);
     setSelected(new Set());
+    setHoveredIndex(null);
+  };
+
+  // Solo el arrastre (touchmove) activa la vista previa: si tambien reaccionara a touchstart, la carta
+  // se desplazaria justo al posar el dedo y el gesto dejaria de reconocerse como un toque simple.
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!isMyTurn) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    const index = getCardIndexAtPoint(touch.clientX, touch.clientY);
+    if (index !== null) setHoveredIndex(index);
+  };
+
+  const clearTouchHover = () => {
+    if (!isMyTurn) return;
+    setHoveredIndex(null);
   };
 
   return (
     <div className="hand">
-      <div className={`hand-cards${revealed ? '' : ' collapsed'}`}>
+      <div
+        className={`hand-cards${revealed ? '' : ' collapsed'}`}
+        onTouchMove={handleTouchMove}
+        onTouchCancel={clearTouchHover}
+      >
         {sorted.map((card, index) => {
           const key = cardKey(card);
 
@@ -98,6 +127,7 @@ export function Hand({ cards, isMyTurn, canPass, onPlay, onPass }: HandProps) {
               key={key}
               card={card}
               selected={isSelected}
+              dataIndex={index}
               onClick={isMyTurn ? () => toggle(card) : undefined}
               onHoverStart={isMyTurn ? () => setHoveredIndex(index) : undefined}
               onHoverEnd={

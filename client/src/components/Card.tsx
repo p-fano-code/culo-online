@@ -14,9 +14,10 @@ interface CardProps {
   onHoverStart?: () => void;
   onHoverEnd?: () => void;
   faceDown?: boolean;
+  dataIndex?: number;
 }
 
-export function Card({ card, selected, onClick, style, onHoverStart, onHoverEnd, faceDown }: CardProps) {
+export function Card({ card, selected, onClick, style, onHoverStart, onHoverEnd, faceDown, dataIndex }: CardProps) {
   const label = `${rankLabel(card.rank)} de ${suitLabel(card.suit)}`;
   const imageSrc = getCardImage(card);
 
@@ -29,6 +30,7 @@ export function Card({ card, selected, onClick, style, onHoverStart, onHoverEnd,
       onClick={onClick}
       onHoverStart={onClick ? onHoverStart : undefined}
       onHoverEnd={onClick ? onHoverEnd : undefined}
+      data-card-index={dataIndex}
     >
       <motion.div
         className="playing-card-flip"

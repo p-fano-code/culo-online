@@ -23,15 +23,17 @@
 }
 
 #lobby .logo {
-  width: 400px;
-  height: 400px;
+  width: 20%;
+  height: 20%;
+  min-width: 250px;
+  min-height: 250px;
   object-fit: contain;
   filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5));
   -webkit-transition: all 1.5s;
   transition: all 1.5s;
   &:hover {
-    width: 500px;
-    height: 500px;
+    width: 25%;
+    height: 25%;
     transform: translate(1.2cm);
     transition: all 1.5s;
     -webkit-transition: all 1.5s;
@@ -203,6 +205,8 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  /* evita que el navegador interprete el arrastre para previsualizar cartas como un gesto de scroll/zoom */
+  touch-action: none;
 }
 
 .hand-actions {

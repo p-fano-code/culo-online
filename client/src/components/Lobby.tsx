@@ -37,7 +37,8 @@ export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, l
     return (
       <section id="lobby">
         <img src={logo} alt="Culo Online" className="logo" />
-        <p className="lobby-subtitle">El clásico juego de cartas español, ahora en tu navegador.</p>
+        {/* suprimimos el subtitulo de la lobby de momento */}
+        {/* <p className="lobby-subtitle">¿Echamos un partida?</p> */}
         <div className="lobby-panel">
           <input
             type="text"
