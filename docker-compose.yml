@@ -1,0 +1,23 @@
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      CLIENT_ORIGIN: http://localhost:8080
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        VITE_SERVER_URL: http://localhost:3001
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
+    restart: unless-stopped

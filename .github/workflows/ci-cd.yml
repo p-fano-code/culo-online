@@ -1,0 +1,64 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ---- Job 1: build + lint (se ejecuta siempre, valida el código) ----
+  build-and-lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        workspace: [client, server]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: ${{ matrix.workspace }}/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: ${{ matrix.workspace }}
+        run: npm ci
+
+      - name: Lint
+        if: matrix.workspace == 'client'
+        working-directory: ${{ matrix.workspace }}
+        run: npm run lint
+
+      - name: Build
+        working-directory: ${{ matrix.workspace }}
+        run: npm run build
+
+  # ---- Job 2: construir y publicar imágenes Docker (solo en push, no en PR) ----
+  docker-build-push:
+    needs: build-and-lint
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        workspace: [client, server]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login en GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build y push de la imagen
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.workspace }}
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/culo-online-${{ matrix.workspace }}:${{ github.ref_name }}
