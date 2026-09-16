@@ -17,6 +17,7 @@ export interface GameView {
   phase: GamePhase;
   handCounts: HandCount[];
   seatOrder: string[];
+  nextRoundDeadline: number | null;
 }
 
 /** Vista del estado de juego filtrada para un jugador: su mano completa, del resto solo el número de cartas. */
@@ -33,5 +34,6 @@ export function toGameView(state: GameState, playerId: string): GameView {
     phase: state.phase,
     handCounts: state.seatOrder.map((id) => ({ playerId: id, count: state.hands[id]?.length ?? 0 })),
     seatOrder: state.seatOrder,
+    nextRoundDeadline: state.nextRoundDeadline,
   };
 }

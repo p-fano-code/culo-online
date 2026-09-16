@@ -32,7 +32,12 @@ function determineStartingPlayer(
   return holderOfThreeOfBastos ?? playerIds[0];
 }
 
-export function createGame(playerIds: string[], previousCuloId?: string): GameState {
+export function createGame(
+  playerIds: string[],
+  previousCuloId?: string,
+  forcedCuloId: string | null = null,
+  forcedViceculoId: string | null = null,
+): GameState {
   const hands = dealCards(playerIds);
   const startingPlayer = determineStartingPlayer(playerIds, hands, previousCuloId);
   const startIndex = playerIds.indexOf(startingPlayer);
@@ -48,8 +53,12 @@ export function createGame(playerIds: string[], previousCuloId?: string): GameSt
     lastPlay: null,
     lastSkip: null,
     finishedOrder: [],
+    departedPlayers: [],
     roles: Object.fromEntries(playerIds.map((id) => [id, null])),
     phase: 'playing',
+    forcedCuloId,
+    forcedViceculoId,
+    nextRoundDeadline: null,
   };
 }
 
@@ -72,6 +81,11 @@ function removeCards(hand: Card[], cards: Card[]): Card[] {
   return result;
 }
 
+/** Un jugador está "fuera" de la rotación si ya terminó esta ronda o si se desconectó a mitad de ella. */
+function isOut(state: GameState, id: string): boolean {
+  return state.finishedOrder.includes(id) || state.departedPlayers.includes(id);
+}
+
 /** Busca el siguiente jugador activo (con cartas) siguiendo el orden de asiento fijo, a partir de la posición de `fromId`. */
 function findNextActive(
   state: GameState,
@@ -85,7 +99,7 @@ function findNextActive(
   for (let step = 1; step <= order.length; step++) {
     const candidate = order[(startIndex + step) % order.length];
     if (candidate === fromId) continue;
-    if (state.finishedOrder.includes(candidate)) continue;
+    if (isOut(state, candidate)) continue;
     if (skipPassed && state.passedPlayers.includes(candidate)) continue;
     return candidate;
   }
@@ -106,32 +120,57 @@ function advanceTurn(state: GameState, fromId: string, applySkip: boolean): Adva
   return { next: secondHop ?? firstHop, skippedPlayerId: firstHop };
 }
 
-function assignRoles(finishedOrder: string[]): Record<string, Role> {
+/**
+ * Asigna roles a partir de quienes terminaron con normalidad esta ronda (`naturalFinishedOrder`, ya sin
+ * los jugadores con rol forzoso). Si hay rol forzoso, se aplica encima y esos jugadores se añaden al final
+ * del orden de cara al podio (viceculo penúltimo, culo último), sin importar cuándo se quedaron sin cartas.
+ */
+function assignRoles(
+  naturalFinishedOrder: string[],
+  forcedCuloId: string | null,
+  forcedViceculoId: string | null,
+): { roles: Record<string, Role>; displayOrder: string[] } {
   const roles: Record<string, Role> = {};
-  finishedOrder.forEach((id) => {
+  naturalFinishedOrder.forEach((id) => {
     roles[id] = null;
   });
 
-  const n = finishedOrder.length;
-  if (n === 0) return roles;
+  const n = naturalFinishedOrder.length;
+  if (n > 0) {
+    roles[naturalFinishedOrder[0]] = 'presidente';
+    if (!forcedCuloId) roles[naturalFinishedOrder[n - 1]] = 'culo';
 
-  roles[finishedOrder[0]] = 'presidente';
-  roles[finishedOrder[n - 1]] = 'culo';
-
-  if (n >= 4) {
-    roles[finishedOrder[1]] = 'vicepresidente';
-    roles[finishedOrder[n - 2]] = 'viceculo';
+    if (n >= 4) {
+      roles[naturalFinishedOrder[1]] = 'vicepresidente';
+      if (!forcedViceculoId) roles[naturalFinishedOrder[n - 2]] = 'viceculo';
+    }
   }
 
-  return roles;
+  const displayOrder = [...naturalFinishedOrder];
+  if (forcedViceculoId) {
+    roles[forcedViceculoId] = 'viceculo';
+    displayOrder.push(forcedViceculoId);
+  }
+  if (forcedCuloId) {
+    roles[forcedCuloId] = 'culo';
+    displayOrder.push(forcedCuloId);
+  }
+
+  return { roles, displayOrder };
 }
 
-function finishGame(state: GameState, finishedOrder: string[]): GameState {
+function finishGame(state: GameState, rawFinishedOrder: string[]): GameState {
+  // Un jugador con rol forzoso puede quedarse sin cartas de forma natural durante la ronda; se excluye aquí
+  // del cálculo "natural" para que no acabe duplicado (una vez por terminar la mano, otra por el forzado).
+  const naturalFinishedOrder = rawFinishedOrder.filter(
+    (id) => id !== state.forcedCuloId && id !== state.forcedViceculoId,
+  );
+  const { roles, displayOrder } = assignRoles(naturalFinishedOrder, state.forcedCuloId, state.forcedViceculoId);
   return {
     ...state,
-    finishedOrder,
+    finishedOrder: displayOrder,
     phase: 'finished',
-    roles: assignRoles(finishedOrder),
+    roles,
     currentTurn: '',
     pile: [],
     requiredCount: null,
@@ -182,14 +221,14 @@ export function playCards(state: GameState, playerId: string, cards: Card[]): Pl
 
   if (finished) {
     const finishedOrder = [...working.finishedOrder, playerId];
-    const remainingActive = working.seatOrder.filter((id) => !finishedOrder.includes(id));
+    const stateWithFinishedOrder = { ...working, finishedOrder };
+    const remainingActive = stateWithFinishedOrder.seatOrder.filter((id) => !isOut(stateWithFinishedOrder, id));
 
     if (remainingActive.length <= 1) {
       const finalOrder = remainingActive.length === 1 ? [...finishedOrder, remainingActive[0]] : finishedOrder;
-      return { ok: true, state: finishGame(working, finalOrder) };
+      return { ok: true, state: finishGame(stateWithFinishedOrder, finalOrder) };
     }
 
-    const stateWithFinishedOrder = { ...working, finishedOrder };
     const { next, skippedPlayerId } = advanceTurn(stateWithFinishedOrder, playerId, causesSkip);
     return {
       ok: true,
@@ -216,12 +255,12 @@ export function passTurn(state: GameState, playerId: string): PlayResult {
   if (state.requiredCount === null) return { ok: false, error: 'CANNOT_PASS_ON_FREE_PLAY' };
 
   const passedPlayers = [...state.passedPlayers, playerId];
-  const activeCount = state.seatOrder.filter((id) => !state.finishedOrder.includes(id)).length;
+  const activeCount = state.seatOrder.filter((id) => !isOut(state, id)).length;
 
   // Se han pasado todos los jugadores activos menos el que hizo la última jugada: se quema la mesa.
   if (passedPlayers.length >= activeCount - 1) {
     const leaderId = state.lastPlay?.playerId ?? null;
-    const leaderStillActive = leaderId !== null && !state.finishedOrder.includes(leaderId);
+    const leaderStillActive = leaderId !== null && !isOut(state, leaderId);
     const nextLeader = leaderStillActive
       ? leaderId
       : leaderId
@@ -244,4 +283,33 @@ export function passTurn(state: GameState, playerId: string): PlayResult {
 
   const next = findNextActive(state, playerId, { skipPassed: true });
   return { ok: true, state: { ...state, passedPlayers, lastSkip: null, currentTurn: next ?? playerId } };
+}
+
+/**
+ * Un jugador se desconecta a mitad de la ronda: su mano se descarta y sale de la rotación de turnos, pero
+ * no entra en `finishedOrder` (no recibe rol de esta ronda). Si no participaba en esta ronda (ya era
+ * espectador) o ya estaba fuera, no hace nada.
+ */
+export function departFromGame(state: GameState, playerId: string): GameState {
+  if (state.phase !== 'playing') return state;
+  if (!state.seatOrder.includes(playerId)) return state;
+  if (isOut(state, playerId)) return state;
+
+  const hands = { ...state.hands };
+  delete hands[playerId];
+  const departedPlayers = [...state.departedPlayers, playerId];
+  const passedPlayers = state.passedPlayers.filter((id) => id !== playerId);
+
+  const working: GameState = { ...state, hands, departedPlayers, passedPlayers };
+
+  const remainingActive = working.seatOrder.filter((id) => !isOut(working, id));
+  if (remainingActive.length <= 1) {
+    const finalOrder = remainingActive.length === 1 ? [...working.finishedOrder, remainingActive[0]] : working.finishedOrder;
+    return finishGame(working, finalOrder);
+  }
+
+  if (working.currentTurn !== playerId) return working;
+
+  const next = findNextActive(working, playerId, { skipPassed: true });
+  return { ...working, currentTurn: next ?? working.currentTurn };
 }

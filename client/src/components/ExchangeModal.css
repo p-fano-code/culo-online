@@ -1,0 +1,64 @@
+.exchange-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 260;
+  padding: 20px;
+}
+
+.exchange-modal {
+  background: var(--bg-felt-1);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  max-width: 420px;
+  width: 100%;
+  padding: 28px 24px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.exchange-role {
+  color: var(--accent-strong);
+  font-family: var(--heading);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.exchange-cards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.exchange-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.exchange-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.exchange-card-row {
+  display: flex;
+  gap: 6px;
+}
+
+.exchange-arrow {
+  font-size: 24px;
+  color: var(--accent);
+}
+
+.exchange-info p {
+  margin: 6px 0;
+  color: var(--text-muted);
+}

@@ -45,11 +45,22 @@ export const RULES_PAGES: RulesPage[] = [
     list: ['1º: Presidente', '2º: Vicepresidente', '...', 'Penúltimo: Viceculo', 'Último: Culo'],
   },
   {
-    title: 'Intercambio entre rondas',
-    paragraphs: ['Al empezar una nueva ronda hay un intercambio obligatorio de cartas según el ranking anterior:'],
+    title: 'Siguiente ronda e intercambio',
+    paragraphs: [
+      'Al terminar una ronda, el anfitrión puede pulsar "Jugar otra ronda"; si no lo hace en 90 segundos, empieza sola.',
+      'Justo tras repartir la nueva ronda, se hace un intercambio automático de cartas según el ranking de la ronda anterior:',
+    ],
     list: [
       'El Culo da sus 2 mejores cartas al Presidente, que le da a cambio sus 2 peores.',
       'El Viceculo da su mejor carta al Vicepresidente, que le da a cambio su peor.',
+    ],
+  },
+  {
+    title: 'Unirse a mitad de partida',
+    paragraphs: [
+      'Si te unes (o te reconectas) con una ronda ya empezada, entras en modo espectador: ves la mesa pero no juegas hasta la siguiente ronda.',
+      'A quien lleva más tiempo esperando le toca ser Culo en cuanto empiece esa ronda; al que le sigue, Viceculo — pase lo que pase con las cartas que le toquen.',
+      'Si te desconectas a mitad de una ronda, tu mano se descarta y tu nombre se queda en gris hasta que vuelvas o empiece la siguiente ronda.',
     ],
   },
 ];

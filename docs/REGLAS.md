@@ -74,15 +74,17 @@ Un jugador termina su participación en la partida cuando se queda sin cartas en
 
 La partida termina cuando queda un único jugador con cartas: ese jugador es el Culo, sin necesidad de que juegue su mano.
 
-## 6. Intercambio de cartas entre rondas
+## 6. Siguiente ronda e intercambio de cartas
 
-Al finalizar una ronda y antes de repartir la siguiente, se realiza un intercambio obligatorio de cartas según el ranking:
+Al terminar una ronda, el anfitrión puede pulsar "Jugar otra ronda" para repartir de nuevo en la misma sala; si no lo hace en 90 segundos, la siguiente ronda arranca sola. Quien empieza la nueva ronda es el Culo de la ronda anterior (sección 3).
+
+Justo después de repartir las cartas de la nueva ronda (no antes), se aplica un intercambio automático y obligatorio sobre esas manos recién repartidas, según el ranking con el que terminó la ronda anterior:
 
 - El Culo entrega sus 2 mejores cartas al Presidente; el Presidente entrega a cambio sus 2 peores cartas al Culo.
 - El Viceculo entrega su mejor carta al Vicepresidente; el Vicepresidente entrega a cambio su peor carta al Viceculo.
 - Los jugadores sin rol (posiciones intermedias) no intercambian cartas.
 
-"Mejor" y "peor" se determinan por el orden de valor de la sección 1. El intercambio es obligatorio y no puede rechazarse.
+"Mejor" y "peor" se determinan por el orden de valor de la sección 1. El intercambio es automático (el jugador no elige qué cartas dar) y no puede rechazarse. Los 4 implicados ven una animación con las cartas que han dado y recibido; el resto de jugadores solo ve un aviso de que se está produciendo el intercambio, sin ver las cartas.
 
 ## 7. Casos límite por número de jugadores
 
@@ -91,7 +93,16 @@ Al finalizar una ronda y antes de repartir la siguiente, se realiza un intercamb
 - **4 o más jugadores**: se aplican los cuatro roles y ambos intercambios tal como se describen en la sección 6.
 - **7 a 10 jugadores**: además de los cuatro roles, se juega con la baraja extendida de 48 cartas (sección 1).
 
-## 8. Estado pendiente de definición
+## 8. Altas y bajas a mitad de partida
 
-- Condición de victoria de la partida completa (¿se juega una única serie de rondas hasta X puntos, o se repiten rondas indefinidamente hasta que los jugadores decidan terminar?).
+Una sala admite unirse o reconectar en cualquier momento, incluso con una ronda en marcha.
+
+- **Unirse a mitad de partida**: el jugador entra en modo espectador. Ve la mesa con normalidad pero no recibe cartas de la ronda en curso; podrá jugar en cuanto se reparta la siguiente ronda (sección 6).
+- **Desconexión durante una ronda activa**: la mano de ese jugador se descarta al instante y sale de la rotación de turnos, pero no se le expulsa de la sala — su nombre sigue visible (en un tono gris apagado, marcado como "desconectado") en vez de desaparecer. No recibe ningún rol de esa ronda. Si no vuelve a conectarse, se le quita de la lista de jugadores al empezar la siguiente ronda.
+- **Reconexión durante una ronda activa**: si vuelve antes de que la ronda termine, entra en modo espectador igual que una unión nueva — no recupera la mano que tenía. Si vuelve una vez la ronda ya ha terminado (o la sala sigue en el lobby), se reincorpora con normalidad.
+- **Rol forzoso**: a quienes están esperando la siguiente ronda (espectadores nuevos o desconectados que han vuelto) se les ordena por el momento en que empezaron a esperar. Al repartir la siguiente ronda, el último de esa cola será Culo y el penúltimo Viceculo, sin importar cómo jueguen esa ronda; el resto entra sin rol forzado, como cualquier otro jugador.
+- **Aviso**: cada vez que alguien se une a mitad de partida o abandona una ronda en marcha, el pirata lo anuncia brevemente al resto de la mesa.
+
+## 9. Estado pendiente de definición
+
 - Tiempo límite por turno, si lo hay.

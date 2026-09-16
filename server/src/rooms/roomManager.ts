@@ -23,16 +23,23 @@ function generateRoomCode(): string {
 }
 
 export function toRoomView(room: Room): RoomView {
+  const pendingSpectators = room.players
+    .filter((p) => p.spectatorSince !== null)
+    .sort((a, b) => (a.spectatorSince as number) - (b.spectatorSince as number))
+    .map((p) => p.id);
+
   return {
     code: room.code,
     hostId: room.hostId,
     state: room.state,
-    players: room.players.map(({ id, name, isHost, connected }) => ({
+    players: room.players.map(({ id, name, isHost, connected, spectatorSince }) => ({
       id,
       name,
       isHost,
       connected,
+      spectating: spectatorSince !== null,
     })),
+    pendingSpectators,
   };
 }
 
@@ -45,6 +52,7 @@ export function createRoom(playerName: string, socketId: string): { room: Room; 
     connected: true,
     socketId,
     token: randomUUID(),
+    spectatorSince: null,
   };
   const room: Room = {
     code,
@@ -61,12 +69,12 @@ export function joinRoom(
   code: string,
   playerName: string,
   socketId: string,
-): { room: Room; player: Player } | ErrorResult<'ROOM_NOT_FOUND' | 'ROOM_ALREADY_STARTED' | 'ROOM_FULL'> {
+): { room: Room; player: Player } | ErrorResult<'ROOM_NOT_FOUND' | 'ROOM_FULL'> {
   const room = rooms.get(code);
   if (!room) return { error: 'ROOM_NOT_FOUND' };
-  if (room.state !== 'lobby') return { error: 'ROOM_ALREADY_STARTED' };
   if (room.players.length >= MAX_PLAYERS) return { error: 'ROOM_FULL' };
 
+  // Unirse una vez la sala ya ha empezado a jugar entra en modo espectador (ver docs/REGLAS.md).
   const player: Player = {
     id: randomUUID(),
     name: playerName,
@@ -74,6 +82,7 @@ export function joinRoom(
     connected: true,
     socketId,
     token: randomUUID(),
+    spectatorSince: room.state !== 'lobby' ? Date.now() : null,
   };
   room.players.push(player);
   return { room, player };
@@ -129,9 +138,14 @@ export function removePlayer(code: string, playerId: string): { room: Room; dele
   return { room, deleted: false };
 }
 
+/**
+ * Marca al jugador de este socket como desconectado y arranca el temporizador de gracia. A diferencia de
+ * antes, NO purga automáticamente de `room.players` al expirar: es el llamador quien decide en `onExpire`
+ * (por ejemplo, no purgar mientras una partida activa siga referenciando a este jugador).
+ */
 export function handleDisconnect(
   socketId: string,
-  onExpire: (room: Room, playerId: string) => void,
+  onExpire: (room: Room, player: Player) => void,
 ): { room: Room; player: Player } | null {
   const found = findRoomBySocket(socketId);
   if (!found) return null;
@@ -143,8 +157,7 @@ export function handleDisconnect(
   const timerKey = `${room.code}:${player.id}`;
   const timer = setTimeout(() => {
     disconnectTimers.delete(timerKey);
-    removePlayer(room.code, player.id);
-    onExpire(room, player.id);
+    onExpire(room, player);
   }, RECONNECT_GRACE_MS);
   disconnectTimers.set(timerKey, timer);
 
@@ -163,19 +176,6 @@ export function leaveRoom(socketId: string): { room: Room; deleted: boolean } | 
   }
 
   return removePlayer(found.room.code, found.player.id);
-}
-
-export function startRoom(
-  code: string,
-  requesterId: string,
-): { room: Room } | ErrorResult<'ROOM_NOT_FOUND' | 'NOT_HOST' | 'NOT_ENOUGH_PLAYERS'> {
-  const room = rooms.get(code);
-  if (!room) return { error: 'ROOM_NOT_FOUND' };
-  if (room.hostId !== requesterId) return { error: 'NOT_HOST' };
-  if (room.players.length < 2) return { error: 'NOT_ENOUGH_PLAYERS' };
-
-  room.state = 'playing';
-  return { room };
 }
 
 export function closeRoom(

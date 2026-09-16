@@ -35,20 +35,36 @@ export interface GameView {
   phase: 'playing' | 'finished';
   handCounts: HandCount[];
   seatOrder: string[];
+  nextRoundDeadline: number | null;
+}
+
+export interface ExchangeView {
+  involved: boolean;
+  role: Role;
+  gave: Card[];
+  received: Card[];
+  presidenteName: string | null;
+  vicepresidenteName: string | null;
+  viceculoName: string | null;
+  culoName: string | null;
 }
 
 interface GameStore {
   game: GameView | null;
   error: string | null;
+  exchange: ExchangeView | null;
   setGame: (game: GameView) => void;
   setError: (error: string | null) => void;
+  setExchange: (exchange: ExchangeView | null) => void;
   reset: () => void;
 }
 
 export const useGameStore = create<GameStore>((set) => ({
   game: null,
   error: null,
+  exchange: null,
   setGame: (game) => set({ game }),
   setError: (error) => set({ error }),
-  reset: () => set({ game: null, error: null }),
+  setExchange: (exchange) => set({ exchange }),
+  reset: () => set({ game: null, error: null, exchange: null }),
 }));

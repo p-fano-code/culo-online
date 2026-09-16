@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import pirateError from '../assets/pirata/pirata_2.png';
 import pirateHappy from '../assets/pirata/pirata_rie.png';
 import pirateWait from '../assets/pirata/pirata_3.png';
+import type { Announcement } from '../store/roomStore';
 import './PirateNarrator.css';
 
 interface PirateNarratorProps {
@@ -11,9 +12,11 @@ interface PirateNarratorProps {
   currentPlayerName: string;
   skippedPlayerId: string | null;
   myPlayerId: string;
+  announcement: Announcement | null;
 }
 
 const ERROR_DISPLAY_MS = 3500;
+const ANNOUNCEMENT_DISPLAY_MS = 4000;
 
 const ERROR_PHRASES: Record<string, string> = {
   NOT_YOUR_TURN: '¡Espera tu turno, grumete!',
@@ -38,6 +41,7 @@ export function PirateNarrator({
   currentPlayerName,
   skippedPlayerId,
   myPlayerId,
+  announcement,
 }: PirateNarratorProps) {
   const [prevCode, setPrevCode] = useState<string | null>(null);
   const [errorExpired, setErrorExpired] = useState(false);
@@ -53,8 +57,24 @@ export function PirateNarrator({
     return () => clearTimeout(timeout);
   }, [errorCode, errorExpired]);
 
+  const [prevAnnouncementTs, setPrevAnnouncementTs] = useState<number | null>(null);
+  const [announcementExpired, setAnnouncementExpired] = useState(false);
+  const announcementTs = announcement?.timestamp ?? null;
+
+  if (announcementTs !== prevAnnouncementTs) {
+    setPrevAnnouncementTs(announcementTs);
+    if (announcementTs !== null) setAnnouncementExpired(false);
+  }
+
+  useEffect(() => {
+    if (announcementTs === null || announcementExpired) return;
+    const timeout = setTimeout(() => setAnnouncementExpired(true), ANNOUNCEMENT_DISPLAY_MS);
+    return () => clearTimeout(timeout);
+  }, [announcementTs, announcementExpired]);
+
   const showingError = Boolean(errorCode) && !errorExpired;
   const showingSkip = !showingError && skippedPlayerId !== null;
+  const showingAnnouncement = !showingError && !showingSkip && Boolean(announcement) && !announcementExpired;
   const wasSkippedMe = skippedPlayerId === myPlayerId;
 
   const image = showingError
@@ -63,9 +83,13 @@ export function PirateNarrator({
       ? wasSkippedMe
         ? pirateError
         : pirateHappy
-      : isMyTurn
-        ? pirateHappy
-        : pirateWait;
+      : showingAnnouncement
+        ? announcement!.type === 'joined'
+          ? pirateHappy
+          : pirateWait
+        : isMyTurn
+          ? pirateHappy
+          : pirateWait;
 
   const message = showingError
     ? toPirateSpeech(errorCode as string)
@@ -73,9 +97,13 @@ export function PirateNarrator({
       ? wasSkippedMe
         ? '¡Te han saltado!'
         : '¡SALTO!'
-      : isMyTurn
-        ? '¡Es tu turno, adelante!'
-        : `Es el turno de ${currentPlayerName}...`;
+      : showingAnnouncement
+        ? announcement!.type === 'joined'
+          ? `¡${announcement!.playerName} se ha unido a la partida!`
+          : `${announcement!.playerName} ha abandonado la partida.`
+        : isMyTurn
+          ? '¡Es tu turno, adelante!'
+          : `Es el turno de ${currentPlayerName}...`;
 
   const bubbleModifier = showingError ? ' pirate-bubble-error' : showingSkip ? ' pirate-bubble-skip' : '';
 

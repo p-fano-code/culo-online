@@ -163,6 +163,12 @@
   box-shadow: 0 0 0 2px var(--accent);
 }
 
+.opponent.opponent-disconnected {
+  color: var(--text-muted);
+  border-style: dashed;
+  opacity: 0.7;
+}
+
 .game-surface {
   display: flex;
   flex-direction: column;

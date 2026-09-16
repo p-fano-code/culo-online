@@ -23,37 +23,41 @@ Go ofrecería mejor rendimiento bruto, a costa de más código para resolver lo 
 
 ```
 Player
-  id            string (uuid, por conexión de socket)
-  name          string
-  roomId        string
-  hand          Card[]          // visible solo para el propio jugador
-  connected     boolean
-  isHost        boolean
+  id              string (uuid, por conexión de socket)
+  name            string
+  connected       boolean
+  isHost          boolean
+  spectatorSince  number | null   // epoch ms desde que espera a la siguiente ronda; null si juega esta
 
 Room
-  code          string (6 caracteres, ej. "K3F9QX")
-  hostId        string
-  players       Player[]        // 2-10 jugadores
-  state         'lobby' | 'playing' | 'exchanging' | 'finished'
-  game          GameState | null
+  code            string (6 caracteres, ej. "K3F9QX")
+  hostId          string
+  players         Player[]          // 2-10 jugadores; se puede unir con la sala ya en juego (espectador)
+  state           'lobby' | 'playing' | 'exchanging' | 'finished'
+  pendingSpectators string[]        // playerIds esperando la siguiente ronda, ordenados por spectatorSince
 
 Card
-  suit          'oros' | 'copas' | 'espadas' | 'bastos'
-  rank          number           // 1-7, 10 (sota), 11 (caballo), 12 (rey)
+  suit            'oros' | 'copas' | 'espadas' | 'bastos'
+  rank            number           // 1-7, [8, 9 solo en baraja extendida], 10 (sota), 11 (caballo), 12 (rey)
 
 GameState
-  deck          Card[]          // no se envía al cliente
-  pile          Card[]          // cartas jugadas visibles en la ronda de mesa actual
-  requiredCount number | null   // cantidad de cartas fijada por la primera jugada de la ronda de mesa
-  passedPlayers string[]        // playerIds que han pasado en la ronda de mesa actual
-  turnOrder     string[]        // playerIds
-  currentTurn   string
-  lastPlay      { playerId, cards } | null
-  lastSkip      { skippedPlayerId } | null   // solo refleja si la última jugada causó un salto de turno
-  finishedOrder string[]        // orden en que los jugadores se quedan sin cartas
-  roles         { playerId: 'presidente' | 'vicepresidente' | 'viceculo' | 'culo' | null }
-  pendingExchange { culoToPresidente, presidenteToCulo, viceculoToVice, viceToViceculo } | null
+  hands           { playerId: Card[] }   // cada jugador solo recibe la suya propia
+  seatOrder       string[]        // orden de asiento fijo de ESTA ronda
+  pile            Card[]          // cartas jugadas visibles en la ronda de mesa actual
+  requiredCount   number | null   // cantidad de cartas fijada por la primera jugada de la ronda de mesa
+  passedPlayers   string[]        // playerIds que han pasado en la ronda de mesa actual
+  currentTurn     string
+  lastPlay        { playerId, cards } | null
+  lastSkip        { skippedPlayerId } | null   // solo refleja si la última jugada causó un salto de turno
+  finishedOrder   string[]        // orden final (podio); los roles forzosos se añaden al final
+  departedPlayers string[]        // se desconectaron a mitad de esta ronda: mano descartada, sin rol
+  roles           { playerId: 'presidente' | 'vicepresidente' | 'viceculo' | 'culo' | null }
+  forcedCuloId    string | null   // rol forzoso por haber entrado a mitad de la ronda anterior
+  forcedViceculoId string | null
+  nextRoundDeadline number | null // epoch ms del auto-inicio de la siguiente ronda (solo si phase='finished')
 ```
+
+El intercambio de cartas entre rondas (sección 6 de `REGLAS.md`) no se guarda como estado persistente: se calcula una vez al repartir la nueva ronda y se envía como un evento puntual (`game:exchange`, filtrado por jugador igual que el resto del estado).
 
 El reglamento completo (orden de valor de cartas, quema de mesa, comodín, intercambio de cartas entre rondas y casos límite por número de jugadores) está definido en [`docs/REGLAS.md`](REGLAS.md).
 

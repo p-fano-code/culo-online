@@ -1,11 +1,11 @@
 import { useCallback, useEffect } from 'react';
 import { socket } from '../socket';
-import { useGameStore, type Card, type GameView } from '../store/gameStore';
+import { useGameStore, type Card, type ExchangeView, type GameView } from '../store/gameStore';
 
 type ActionResponse = { error?: string };
 
 export function useGame() {
-  const { game, error, setGame, setError, reset } = useGameStore();
+  const { game, error, exchange, setGame, setError, setExchange, reset } = useGameStore();
 
   useEffect(() => {
     const handleGameState = (view: GameView) => setGame(view);
@@ -14,6 +14,14 @@ export function useGame() {
       socket.off('game:state', handleGameState);
     };
   }, [setGame]);
+
+  useEffect(() => {
+    const handleExchange = (view: ExchangeView) => setExchange(view);
+    socket.on('game:exchange', handleExchange);
+    return () => {
+      socket.off('game:exchange', handleExchange);
+    };
+  }, [setExchange]);
 
   useEffect(() => {
     socket.on('room:closed', reset);
@@ -39,5 +47,7 @@ export function useGame() {
     });
   }, [setError]);
 
-  return { game, error, playCards, pass, reset };
+  const clearExchange = useCallback(() => setExchange(null), [setExchange]);
+
+  return { game, error, exchange, playCards, pass, clearExchange, reset };
 }
