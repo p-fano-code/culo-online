@@ -33,7 +33,7 @@ Player
 Room
   code          string (6 caracteres, ej. "K3F9QX")
   hostId        string
-  players       Player[]        // 2-6 jugadores
+  players       Player[]        // 2-10 jugadores
   state         'lobby' | 'playing' | 'exchanging' | 'finished'
   game          GameState | null
 

@@ -74,6 +74,7 @@ export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, l
   }
 
   const isHost = room.hostId === session.playerId;
+  const deckSize = room.players.length > 6 ? 48 : 40;
 
   return (
     <section id="lobby">
@@ -89,6 +90,7 @@ export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, l
           </li>
         ))}
       </ul>
+      <p className="lobby-caption">Máximo 10 jugadores.</p>
       {isHost ? (
         <button type="button" onClick={startRoom} disabled={room.players.length < 2}>
           Empezar partida
@@ -96,6 +98,7 @@ export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, l
       ) : (
         <p className="lobby-subtitle">Esperando a que el anfitrión empiece la partida...</p>
       )}
+      <p className="lobby-caption">Se jugará con la baraja de {deckSize} cartas.</p>
       <button type="button" className="secondary" onClick={leaveRoom}>
         Salir de la sala
       </button>

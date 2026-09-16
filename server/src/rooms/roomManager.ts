@@ -4,7 +4,7 @@ import type { Player, Room, RoomView } from './types.js';
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sin 0, O, 1, I para evitar confusiones al leerlo en voz alta
 const CODE_LENGTH = 6;
 const RECONNECT_GRACE_MS = 2 * 60 * 1000;
-const MAX_PLAYERS = 6;
+export const MAX_PLAYERS = 10;
 
 const rooms = new Map<string, Room>();
 const disconnectTimers = new Map<string, NodeJS.Timeout>();

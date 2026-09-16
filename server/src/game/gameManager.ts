@@ -1,4 +1,4 @@
-import { createDeck, isWild, rankValue, shuffle } from './deck.js';
+import { createDeck, isWild, rankValue, shuffle, useExtendedDeck } from './deck.js';
 import type { Card, GameState, Role } from './types.js';
 
 interface Advance {
@@ -11,7 +11,7 @@ type SuccessResult = { ok: true; state: GameState };
 export type PlayResult = SuccessResult | ErrorResult;
 
 function dealCards(playerIds: string[]): Record<string, Card[]> {
-  const deck = shuffle(createDeck());
+  const deck = shuffle(createDeck(useExtendedDeck(playerIds.length)));
   const hands: Record<string, Card[]> = Object.fromEntries(playerIds.map((id) => [id, []]));
   deck.forEach((card, index) => {
     hands[playerIds[index % playerIds.length]].push(card);

@@ -4,21 +4,26 @@ Este documento fija el reglamento que implementa la máquina de estados del serv
 
 ## 1. Baraja
 
-Baraja española de 40 cartas: palos oros, copas, espadas y bastos; valores del 1 al 7 y figuras sota, caballo y rey.
+Baraja española: palos oros, copas, espadas y bastos.
+
+El tamaño de la baraja depende del número de jugadores de la sala:
+
+- **Hasta 6 jugadores**: baraja estándar de 40 cartas, valores del 1 al 7 y figuras sota, caballo y rey.
+- **De 7 a 10 jugadores**: baraja extendida de 48 cartas, se añaden el 8 y el 9 de cada palo. Con más de 6 jugadores, una baraja de 40 cartas se agotaría demasiado rápido para que la partida tenga recorrido.
 
 Orden de valor en el juego, de más baja a más alta:
 
 ```
-3 < 4 < 5 < 6 < 7 < sota < caballo < rey < as < 2
+3 < 4 < 5 < 6 < 7 < 8 < 9 < sota < caballo < rey < as < 2
 ```
 
-El 2 es la carta más alta de la baraja y tiene además comportamiento especial (ver sección 4).
+El 8 y el 9 solo existen en la baraja extendida; en una partida con baraja estándar esos valores simplemente no aparecen. El 2 es la carta más alta de la baraja y tiene además comportamiento especial (ver sección 4).
 
 ## 2. Jugadores y reparto
 
-Admite entre 2 y 6 jugadores. Con 4 o más jugadores se asignan los cuatro roles extremos (Presidente, Vicepresidente, Viceculo, Culo); por debajo de 4 jugadores, los roles intermedios no existen (ver sección 7).
+Admite entre 2 y 10 jugadores. Con 4 o más jugadores se asignan los cuatro roles extremos (Presidente, Vicepresidente, Viceculo, Culo); por debajo de 4 jugadores, los roles intermedios no existen (ver sección 7).
 
-Al inicio de la partida, la baraja completa se reparte a partes iguales entre los jugadores. Con 40 cartas y un número de jugadores que no divide exacto, los jugadores en los primeros puestos del reparto reciben una carta adicional.
+Al inicio de la partida, la baraja completa (40 u 48 cartas según el número de jugadores, ver sección 1) se reparte a partes iguales entre los jugadores. Cuando el número de jugadores no divide exacto el tamaño de la baraja, los jugadores en los primeros puestos del reparto reciben una carta adicional.
 
 ## 3. Inicio de turno
 
@@ -84,6 +89,7 @@ Al finalizar una ronda y antes de repartir la siguiente, se realiza un intercamb
 - **2 jugadores**: solo existen los roles Presidente y Culo. El intercambio es de 2 cartas en cada sentido (regla del Presidente/Culo).
 - **3 jugadores**: existen Presidente, un jugador intermedio sin rol, y Culo. No hay Vicepresidente ni Viceculo, por lo que no hay intercambio de 1 carta.
 - **4 o más jugadores**: se aplican los cuatro roles y ambos intercambios tal como se describen en la sección 6.
+- **7 a 10 jugadores**: además de los cuatro roles, se juega con la baraja extendida de 48 cartas (sección 1).
 
 ## 8. Estado pendiente de definición
 

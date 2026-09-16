@@ -47,6 +47,12 @@
   margin-top: -8px;
 }
 
+.lobby-caption {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin: 0;
+}
+
 .lobby-panel {
   display: flex;
   flex-direction: column;

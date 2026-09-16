@@ -8,10 +8,11 @@ export const RULES_PAGES: RulesPage[] = [
   {
     title: 'La baraja',
     paragraphs: [
-      'Se juega con la baraja española de 40 cartas: oros, copas, espadas y bastos.',
+      'Se juega con la baraja española: oros, copas, espadas y bastos. Las salas admiten entre 2 y 10 jugadores.',
+      'Hasta 6 jugadores se usa la baraja estándar de 40 cartas. Con 7 o más, se añaden el 8 y el 9 de cada palo (baraja de 48 cartas), para que no se agote tan rápido.',
       'El orden de valor, de más baja a más alta, es:',
     ],
-    list: ['3', '4', '5', '6', '7', 'Sota', 'Caballo', 'Rey', 'As', '2 (la más alta)'],
+    list: ['3', '4', '5', '6', '7', '8', '9', 'Sota', 'Caballo', 'Rey', 'As', '2 (la más alta)'],
   },
   {
     title: 'Cómo se juega',
