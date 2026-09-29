@@ -52,6 +52,8 @@ export function createGame(
     passedPlayers: [],
     lastPlay: null,
     lastSkip: null,
+    lastBurn: null,
+    seq: 0,
     finishedOrder: [],
     departedPlayers: [],
     roles: Object.fromEntries(playerIds.map((id) => [id, null])),
@@ -175,6 +177,8 @@ function finishGame(state: GameState, rawFinishedOrder: string[]): GameState {
     pile: [],
     requiredCount: null,
     passedPlayers: [],
+    lastSkip: null,
+    lastBurn: null,
   };
 }
 
@@ -212,7 +216,9 @@ export function playCards(state: GameState, playerId: string, cards: Card[]): Pl
     hands,
     lastPlay: { playerId, cards },
     lastSkip: null,
+    lastBurn: wild ? { burnedBy: playerId, reason: 'wild' } : null,
     passedPlayers: [],
+    seq: state.seq + 1,
   };
 
   working = wild
@@ -276,13 +282,18 @@ export function passTurn(state: GameState, playerId: string): PlayResult {
         passedPlayers: [],
         lastPlay: null,
         lastSkip: null,
+        lastBurn: { burnedBy: nextLeader ?? playerId, reason: 'allPassed' },
         currentTurn: nextLeader ?? playerId,
+        seq: state.seq + 1,
       },
     };
   }
 
   const next = findNextActive(state, playerId, { skipPassed: true });
-  return { ok: true, state: { ...state, passedPlayers, lastSkip: null, currentTurn: next ?? playerId } };
+  return {
+    ok: true,
+    state: { ...state, passedPlayers, lastSkip: null, lastBurn: null, currentTurn: next ?? playerId, seq: state.seq + 1 },
+  };
 }
 
 /**

@@ -60,6 +60,8 @@ La mesa se quema (se retiran las cartas jugadas y se abre una ronda de mesa nuev
 
 En ambos casos, el jugador que hizo la última jugada antes de la quema inicia la siguiente ronda de mesa libremente, según la regla de la sección anterior.
 
+**Aviso**: al igual que con el salto de turno, el pirata anuncia la quema en el momento en que ocurre — "¡Has quemado la mesa!" a quien la provocó y "¡Mesa quemada!" al resto — para que quede claro que, aunque no ha cambiado el nombre en el indicador de turno, sigue jugando la misma persona.
+
 ## 5. Fin de la partida y ranking
 
 Un jugador termina su participación en la partida cuando se queda sin cartas en la mano. El orden en que los jugadores se quedan sin cartas determina el ranking final:

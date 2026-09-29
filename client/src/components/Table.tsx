@@ -117,6 +117,8 @@ export function Table({
             isMyTurn={isMyTurn}
             currentPlayerName={playerName(players, game.currentTurn)}
             skippedPlayerId={game.lastSkip?.skippedPlayerId ?? null}
+            burn={game.lastBurn}
+            seq={game.seq}
             myPlayerId={myPlayerId}
             announcement={announcement}
           />

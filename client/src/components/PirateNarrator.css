@@ -37,6 +37,11 @@
   background: #fdf1d8;
 }
 
+.pirate-bubble.pirate-bubble-burn {
+  border-color: #b34700;
+  background: #ffe6d1;
+}
+
 .pirate-bubble::before,
 .pirate-bubble::after {
   content: '';
@@ -57,6 +62,10 @@
 
 .pirate-bubble.pirate-bubble-skip::after {
   border-right-color: #fdf1d8;
+}
+
+.pirate-bubble.pirate-bubble-burn::after {
+  border-right-color: #ffe6d1;
 }
 
 @media (max-width: 400px) {

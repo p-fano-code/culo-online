@@ -16,6 +16,11 @@ export interface Skip {
   skippedPlayerId: string;
 }
 
+export interface Burn {
+  burnedBy: string;
+  reason: 'wild' | 'allPassed';
+}
+
 export type Role = 'presidente' | 'vicepresidente' | 'viceculo' | 'culo' | null;
 
 export interface HandCount {
@@ -30,6 +35,8 @@ export interface GameView {
   currentTurn: string;
   lastPlay: Play | null;
   lastSkip: Skip | null;
+  lastBurn: Burn | null;
+  seq: number;
   finishedOrder: string[];
   roles: Record<string, Role>;
   phase: 'playing' | 'finished';
