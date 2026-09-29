@@ -5,7 +5,6 @@ import logo from '../assets/logo.png';
 const ERROR_MESSAGES: Record<string, string> = {
   INVALID_NAME: 'Introduce un nombre y, si te unes a una sala, un código válido.',
   ROOM_NOT_FOUND: 'No existe ninguna sala con ese código.',
-  ROOM_ALREADY_STARTED: 'Esa partida ya ha empezado.',
   ROOM_FULL: 'La sala está completa.',
   NOT_HOST: 'Solo el anfitrión puede iniciar la partida.',
   NOT_ENOUGH_PLAYERS: 'Se necesitan al menos 2 jugadores para empezar.',
@@ -74,6 +73,7 @@ export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, l
   }
 
   const isHost = room.hostId === session.playerId;
+  const deckSize = room.players.length > 6 ? 48 : 40;
 
   return (
     <section id="lobby">
@@ -89,6 +89,7 @@ export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, l
           </li>
         ))}
       </ul>
+      <p className="lobby-caption">Máximo 10 jugadores.</p>
       {isHost ? (
         <button type="button" onClick={startRoom} disabled={room.players.length < 2}>
           Empezar partida
@@ -96,6 +97,7 @@ export function Lobby({ room, session, error, createRoom, joinRoom, startRoom, l
       ) : (
         <p className="lobby-subtitle">Esperando a que el anfitrión empiece la partida...</p>
       )}
+      <p className="lobby-caption">Se jugará con la baraja de {deckSize} cartas.</p>
       <button type="button" className="secondary" onClick={leaveRoom}>
         Salir de la sala
       </button>

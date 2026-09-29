@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import type { Role } from '../store/gameStore';
 import type { PlayerView } from '../store/roomStore';
 import pirateHappy from '../assets/pirata/pirata_rie.png';
@@ -12,8 +13,11 @@ interface GameOverModalProps {
   players: PlayerView[];
   myPlayerId: string;
   isHost: boolean;
+  nextRoundDeadline: number | null;
+  roomError: string | null;
   onLeaveRoom: () => void;
   onCloseRoom: () => void;
+  onStartNextRound: () => void;
 }
 
 const ROLE_LABELS: Record<Exclude<Role, null>, string> = {
@@ -21,6 +25,11 @@ const ROLE_LABELS: Record<Exclude<Role, null>, string> = {
   vicepresidente: 'Vicepresidente',
   viceculo: 'Viceculo',
   culo: 'Culo',
+};
+
+const ROOM_ERROR_MESSAGES: Record<string, string> = {
+  NOT_ENOUGH_PLAYERS: 'Se necesitan al menos 2 jugadores conectados para empezar otra ronda.',
+  ROUND_IN_PROGRESS: 'La ronda ya ha empezado.',
 };
 
 function playerName(players: PlayerView[], id: string): string {
@@ -48,10 +57,23 @@ export function GameOverModal({
   players,
   myPlayerId,
   isHost,
+  nextRoundDeadline,
+  roomError,
   onLeaveRoom,
   onCloseRoom,
+  onStartNextRound,
 }: GameOverModalProps) {
   const reaction = getPirateReaction(roles[myPlayerId] ?? null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (nextRoundDeadline === null) return;
+    const interval = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(interval);
+  }, [nextRoundDeadline]);
+
+  const remainingSeconds =
+    nextRoundDeadline !== null ? Math.max(0, Math.ceil((nextRoundDeadline - now) / 1000)) : null;
 
   return (
     <motion.div className="gameover-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
@@ -89,7 +111,20 @@ export function GameOverModal({
           })}
         </ol>
 
+        {remainingSeconds !== null && (
+          <p className="gameover-countdown">
+            {remainingSeconds > 0
+              ? `La próxima ronda empieza en ${remainingSeconds}s`
+              : 'Empezando la próxima ronda...'}
+          </p>
+        )}
+
         <div className="gameover-actions">
+          {isHost && (
+            <button type="button" onClick={onStartNextRound}>
+              Jugar otra ronda
+            </button>
+          )}
           <button type="button" className="secondary" onClick={onLeaveRoom}>
             Salir al menú principal
           </button>
@@ -99,6 +134,8 @@ export function GameOverModal({
             </button>
           )}
         </div>
+
+        {roomError && <p className="lobby-error">{ROOM_ERROR_MESSAGES[roomError] ?? roomError}</p>}
       </motion.div>
     </motion.div>
   );

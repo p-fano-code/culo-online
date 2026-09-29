@@ -1,0 +1,20 @@
+.spectator-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.spectator-panel h2 {
+  font-size: 20px;
+}
+
+.spectator-projection {
+  font-family: var(--heading);
+  font-weight: 600;
+  color: var(--accent-strong);
+}

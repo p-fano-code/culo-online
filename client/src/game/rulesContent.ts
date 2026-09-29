@@ -8,10 +8,11 @@ export const RULES_PAGES: RulesPage[] = [
   {
     title: 'La baraja',
     paragraphs: [
-      'Se juega con la baraja española de 40 cartas: oros, copas, espadas y bastos.',
+      'Se juega con la baraja española: oros, copas, espadas y bastos. Las salas admiten entre 2 y 10 jugadores.',
+      'Hasta 6 jugadores se usa la baraja estándar de 40 cartas. Con 7 o más, se añaden el 8 y el 9 de cada palo (baraja de 48 cartas), para que no se agote tan rápido.',
       'El orden de valor, de más baja a más alta, es:',
     ],
-    list: ['3', '4', '5', '6', '7', 'Sota', 'Caballo', 'Rey', 'As', '2 (la más alta)'],
+    list: ['3', '4', '5', '6', '7', '8', '9', 'Sota', 'Caballo', 'Rey', 'As', '2 (la más alta)'],
   },
   {
     title: 'Cómo se juega',
@@ -34,6 +35,7 @@ export const RULES_PAGES: RulesPage[] = [
       'El 2 es especial: se puede jugar en cualquier momento, sea cual sea la jugada anterior, sin igualar cantidad ni valor.',
       'Jugar un 2 quema la mesa al instante: se retiran las cartas y quien lo jugó abre una ronda nueva libremente.',
       'La mesa también se quema si todos los demás jugadores pasan tras una jugada.',
+      'El pirata avisa de la quema al momento: "¡Mesa quemada!" a la mesa, y a quien la provocó le confirma que sigue jugando él.',
     ],
   },
   {
@@ -44,11 +46,22 @@ export const RULES_PAGES: RulesPage[] = [
     list: ['1º: Presidente', '2º: Vicepresidente', '...', 'Penúltimo: Viceculo', 'Último: Culo'],
   },
   {
-    title: 'Intercambio entre rondas',
-    paragraphs: ['Al empezar una nueva ronda hay un intercambio obligatorio de cartas según el ranking anterior:'],
+    title: 'Siguiente ronda e intercambio',
+    paragraphs: [
+      'Al terminar una ronda, el anfitrión puede pulsar "Jugar otra ronda"; si no lo hace en 90 segundos, empieza sola.',
+      'Justo tras repartir la nueva ronda, se hace un intercambio automático de cartas según el ranking de la ronda anterior:',
+    ],
     list: [
       'El Culo da sus 2 mejores cartas al Presidente, que le da a cambio sus 2 peores.',
       'El Viceculo da su mejor carta al Vicepresidente, que le da a cambio su peor.',
+    ],
+  },
+  {
+    title: 'Unirse a mitad de partida',
+    paragraphs: [
+      'Si te unes (o te reconectas) con una ronda ya empezada, entras en modo espectador: ves la mesa pero no juegas hasta la siguiente ronda.',
+      'A quien lleva más tiempo esperando le toca ser Culo en cuanto empiece esa ronda; al que le sigue, Viceculo — pase lo que pase con las cartas que le toquen.',
+      'Si te desconectas a mitad de una ronda, tu mano se descarta y tu nombre se queda en gris hasta que vuelvas o empiece la siguiente ronda.',
     ],
   },
 ];

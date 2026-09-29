@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { socket } from '../socket';
-import { useRoomStore, type RoomView } from '../store/roomStore';
+import { useRoomStore, type Announcement, type RoomView } from '../store/roomStore';
 
 const STORAGE_KEY = 'culo-online:session';
 
@@ -29,7 +29,8 @@ function persistSession(session: StoredSession | null) {
 }
 
 export function useRoom() {
-  const { room, session, error, setRoom, setSession, setError, reset } = useRoomStore();
+  const { room, session, error, announcement, setRoom, setSession, setError, setAnnouncement, reset } =
+    useRoomStore();
 
   useEffect(() => {
     const handleRoomUpdate = (updated: RoomView) => setRoom(updated);
@@ -38,6 +39,14 @@ export function useRoom() {
       socket.off('room:update', handleRoomUpdate);
     };
   }, [setRoom]);
+
+  useEffect(() => {
+    const handleAnnouncement = (payload: Announcement) => setAnnouncement(payload);
+    socket.on('room:announcement', handleAnnouncement);
+    return () => {
+      socket.off('room:announcement', handleAnnouncement);
+    };
+  }, [setAnnouncement]);
 
   useEffect(() => {
     const handleRoomClosed = () => {
@@ -112,5 +121,5 @@ export function useRoom() {
     });
   }, [setError]);
 
-  return { room, session, error, createRoom, joinRoom, startRoom, leaveRoom, closeRoom };
+  return { room, session, error, announcement, createRoom, joinRoom, startRoom, leaveRoom, closeRoom };
 }

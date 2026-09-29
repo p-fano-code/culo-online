@@ -1,9 +1,9 @@
 import type { Server, Socket } from 'socket.io';
 import { findRoomBySocket } from '../rooms/roomManager.js';
-import { broadcastGameState } from '../game/broadcast.js';
-import { getGame, setGame } from '../game/gameStore.js';
+import { getGame } from '../game/gameStore.js';
 import { playCards, passTurn } from '../game/gameManager.js';
 import type { Card } from '../game/types.js';
+import { armRoundEndIfNeeded } from './roundFlow.js';
 
 type Ack<T> = (response: T) => void;
 
@@ -18,8 +18,7 @@ export function registerGameHandlers(io: Server, socket: Socket) {
     const result = playCards(state, found.player.id, payload?.cards ?? []);
     if (!result.ok) return ack?.({ error: result.error });
 
-    setGame(found.room.code, result.state);
-    broadcastGameState(io, found.room);
+    armRoundEndIfNeeded(io, found.room, result.state);
     ack?.({});
   });
 
@@ -33,8 +32,7 @@ export function registerGameHandlers(io: Server, socket: Socket) {
     const result = passTurn(state, found.player.id);
     if (!result.ok) return ack?.({ error: result.error });
 
-    setGame(found.room.code, result.state);
-    broadcastGameState(io, found.room);
+    armRoundEndIfNeeded(io, found.room, result.state);
     ack?.({});
   });
 }

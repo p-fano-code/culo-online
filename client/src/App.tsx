@@ -10,8 +10,18 @@ import './App.css';
 function App() {
   const [connected, setConnected] = useState(socket.connected);
   const [rulesOpen, setRulesOpen] = useState(false);
-  const { room, session, error: roomError, createRoom, joinRoom, startRoom, leaveRoom, closeRoom } = useRoom();
-  const { game, error: gameError, playCards, pass } = useGame();
+  const {
+    room,
+    session,
+    error: roomError,
+    announcement,
+    createRoom,
+    joinRoom,
+    startRoom,
+    leaveRoom,
+    closeRoom,
+  } = useRoom();
+  const { game, error: gameError, exchange, playCards, pass, clearExchange } = useGame();
 
   useEffect(() => {
     const handleConnect = () => setConnected(true);
@@ -63,11 +73,17 @@ function App() {
       <Table
         game={game}
         players={room.players}
+        pendingSpectators={room.pendingSpectators}
         myPlayerId={session.playerId}
         isHost={room.hostId === session.playerId}
         error={gameError}
+        roomError={roomError}
+        announcement={announcement}
+        exchange={exchange}
+        onClearExchange={clearExchange}
         closeRoom={closeRoom}
         leaveRoom={leaveRoom}
+        startRoom={startRoom}
         canPass={canPass}
         onPlay={playCards}
         onPass={pass}

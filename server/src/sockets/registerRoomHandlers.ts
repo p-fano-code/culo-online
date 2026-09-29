@@ -7,13 +7,14 @@ import {
   joinRoom,
   leaveRoom,
   reconnectPlayer,
-  startRoom,
+  removePlayer,
   toRoomView,
 } from '../rooms/roomManager.js';
 import type { Room, RoomView } from '../rooms/types.js';
+import { deleteGame, getGame } from '../game/gameStore.js';
+import { departFromGame } from '../game/gameManager.js';
 import { broadcastGameState } from '../game/broadcast.js';
-import { createGame } from '../game/gameManager.js';
-import { deleteGame, getGame, setGame } from '../game/gameStore.js';
+import { armRoundEndIfNeeded, startNextRound } from './roundFlow.js';
 
 type CreateRoomPayload = { playerName: string };
 type JoinRoomPayload = { roomCode: string; playerName: string };
@@ -27,6 +28,10 @@ type Ack<T> = (response: T) => void;
 
 function broadcastRoomUpdate(io: Server, room: Room) {
   io.to(room.code).emit('room:update', toRoomView(room));
+}
+
+function broadcastAnnouncement(io: Server, room: Room, type: 'joined' | 'left', playerName: string) {
+  io.to(room.code).emit('room:announcement', { type, playerName, timestamp: Date.now() });
 }
 
 export function registerRoomHandlers(io: Server, socket: Socket) {
@@ -50,6 +55,10 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
     socket.join(result.room.code);
     ack({ room: toRoomView(result.room), playerId: result.player.id, token: result.player.token });
     broadcastRoomUpdate(io, result.room);
+
+    if (result.player.spectatorSince !== null) {
+      broadcastAnnouncement(io, result.room, 'joined', result.player.name);
+    }
   });
 
   socket.on('player:reconnect', (payload: ReconnectPayload, ack: Ack<SessionResponse>) => {
@@ -65,15 +74,11 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
   socket.on('room:start', (_payload: unknown, ack?: Ack<{ error?: string }>) => {
     const found = findRoomBySocket(socket.id);
     if (!found) return ack?.({ error: 'ROOM_NOT_FOUND' });
+    if (found.room.hostId !== found.player.id) return ack?.({ error: 'NOT_HOST' });
 
-    const result = startRoom(found.room.code, found.player.id);
-    if ('error' in result) return ack?.(result);
+    const result = startNextRound(io, found.room, { manual: true });
+    if (result.error) return ack?.({ error: result.error });
 
-    const playerIds = result.room.players.map((p) => p.id);
-    setGame(result.room.code, createGame(playerIds));
-
-    broadcastRoomUpdate(io, result.room);
-    broadcastGameState(io, result.room);
     ack?.({});
   });
 
@@ -103,7 +108,30 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
   });
 
   socket.on('disconnect', () => {
-    const result = handleDisconnect(socket.id, (room) => broadcastRoomUpdate(io, room));
-    if (result) broadcastRoomUpdate(io, result.room);
+    const result = handleDisconnect(socket.id, (room, player) => {
+      const game = getGame(room.code);
+      const stillInActiveGame = game?.phase === 'playing' && game.seatOrder.includes(player.id);
+      if (stillInActiveGame) return; // se purgará al empezar la siguiente ronda, no antes
+
+      const removed = removePlayer(room.code, player.id);
+      if (removed && !removed.deleted) broadcastRoomUpdate(io, removed.room);
+    });
+
+    if (!result) return;
+    broadcastRoomUpdate(io, result.room);
+
+    const game = getGame(result.room.code);
+    const wasActivelyPlaying =
+      game?.phase === 'playing' &&
+      game.seatOrder.includes(result.player.id) &&
+      !game.departedPlayers.includes(result.player.id) &&
+      !game.finishedOrder.includes(result.player.id);
+
+    if (wasActivelyPlaying && game) {
+      result.player.spectatorSince = Date.now();
+      const updated = departFromGame(game, result.player.id);
+      armRoundEndIfNeeded(io, result.room, updated);
+      broadcastAnnouncement(io, result.room, 'left', result.player.name);
+    }
   });
 }
