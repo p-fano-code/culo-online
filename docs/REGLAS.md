@@ -60,7 +60,9 @@ La mesa se quema (se retiran las cartas jugadas y se abre una ronda de mesa nuev
 
 En ambos casos, el jugador que hizo la última jugada antes de la quema inicia la siguiente ronda de mesa libremente, según la regla de la sección anterior.
 
-**Aviso**: al igual que con el salto de turno, el pirata anuncia la quema en el momento en que ocurre — "¡Has quemado la mesa!" a quien la provocó y "¡Mesa quemada!" al resto — para que quede claro que, aunque no ha cambiado el nombre en el indicador de turno, sigue jugando la misma persona.
+**Aviso**: al igual que con el salto de turno, el pirata anuncia la quema en el momento en que ocurre. Si fue por un 2: "¡Has sacado un 2 y quemas la mesa! Sigues tú." a quien lo jugó y "¡X ha sacado un 2 y quema la mesa!" al resto. Si fue porque todos pasaron: "X pasa. ¡Pasamos a la siguiente ronda!" (siendo X el último en pasar).
+
+Cuando un jugador pasa y la ronda de mesa continúa (quedan otros jugadores por responder), el pirata anuncia "X pasa. Es el turno de Y" ("¡Es tu turno!" a quien le toca).
 
 ## 5. Fin de la partida y ranking
 

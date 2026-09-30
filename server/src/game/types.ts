@@ -19,6 +19,7 @@ export interface Skip {
 export interface Burn {
   burnedBy: string; // quien provocó la quema (jugó un 2, o era el líder cuando todos pasaron)
   reason: 'wild' | 'allPassed';
+  passedBy?: string; // solo en 'allPassed': el último jugador que pasó y cerró la ronda de mesa
 }
 
 export type GamePhase = 'playing' | 'finished';
@@ -33,6 +34,8 @@ export interface GameState {
   lastPlay: Play | null;
   lastSkip: Skip | null; // refleja si la última jugada (y solo esa) provocó un salto de turno
   lastBurn: Burn | null; // refleja si la última jugada (y solo esa) quemó la mesa
+  /** id de quien pasó si la última acción fue un pase que NO quemó la mesa (la ronda de mesa sigue). */
+  lastPass: string | null;
   /** contador que se incrementa en cada jugada/pase/baja: permite al cliente distinguir dos
    * saltos o quemas consecutivos aunque involucren al mismo jugador (lastSkip/lastBurn por sí
    * solos no cambian de valor en ese caso). */

@@ -35,7 +35,7 @@ export const RULES_PAGES: RulesPage[] = [
       'El 2 es especial: se puede jugar en cualquier momento, sea cual sea la jugada anterior, sin igualar cantidad ni valor.',
       'Jugar un 2 quema la mesa al instante: se retiran las cartas y quien lo jugó abre una ronda nueva libremente.',
       'La mesa también se quema si todos los demás jugadores pasan tras una jugada.',
-      'El pirata avisa de la quema al momento: "¡Mesa quemada!" a la mesa, y a quien la provocó le confirma que sigue jugando él.',
+      'El pirata avisa de la quema al momento: con un 2 confirma a quien lo jugó que sigue él; si todos pasan, anuncia "X pasa. ¡Pasamos a la siguiente ronda!".',
     ],
   },
   {

@@ -125,6 +125,9 @@ export function Table({
             currentPlayerName={playerName(players, game.currentTurn)}
             skippedPlayerId={game.lastSkip?.skippedPlayerId ?? null}
             burn={game.lastBurn}
+            burnPasserName={game.lastBurn?.passedBy ? playerName(players, game.lastBurn.passedBy) : null}
+            passedPlayerId={game.lastPass}
+            passedPlayerName={game.lastPass ? playerName(players, game.lastPass) : null}
             seq={game.seq}
             myPlayerId={myPlayerId}
             announcement={announcement}

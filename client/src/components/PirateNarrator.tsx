@@ -11,7 +11,12 @@ interface PirateNarratorProps {
   isMyTurn: boolean;
   currentPlayerName: string;
   skippedPlayerId: string | null;
-  burn: { burnedBy: string; reason: 'wild' | 'allPassed' } | null;
+  burn: { burnedBy: string; reason: 'wild' | 'allPassed'; passedBy?: string } | null;
+  /** nombre del último jugador que pasó cuando la mesa se quema porque todos pasan */
+  burnPasserName: string | null;
+  /** quien pasó en la última acción, si no provocó quema (la ronda de mesa sigue) */
+  passedPlayerId: string | null;
+  passedPlayerName: string | null;
   seq: number;
   myPlayerId: string;
   announcement: Announcement | null;
@@ -20,6 +25,7 @@ interface PirateNarratorProps {
 const ERROR_DISPLAY_MS = 3500;
 const SKIP_DISPLAY_MS = 3000;
 const BURN_DISPLAY_MS = 3000;
+const PASS_DISPLAY_MS = 3000;
 const ANNOUNCEMENT_DISPLAY_MS = 4000;
 
 const ERROR_PHRASES: Record<string, string> = {
@@ -45,6 +51,9 @@ export function PirateNarrator({
   currentPlayerName,
   skippedPlayerId,
   burn,
+  burnPasserName,
+  passedPlayerId,
+  passedPlayerName,
   seq,
   myPlayerId,
   announcement,
@@ -69,11 +78,13 @@ export function PirateNarrator({
   const [prevSeq, setPrevSeq] = useState<number | null>(null);
   const [skipExpired, setSkipExpired] = useState(false);
   const [burnExpired, setBurnExpired] = useState(false);
+  const [passExpired, setPassExpired] = useState(false);
 
   if (seq !== prevSeq) {
     setPrevSeq(seq);
     if (skippedPlayerId) setSkipExpired(false);
     if (burn) setBurnExpired(false);
+    if (passedPlayerId) setPassExpired(false);
   }
 
   useEffect(() => {
@@ -87,6 +98,12 @@ export function PirateNarrator({
     const timeout = setTimeout(() => setBurnExpired(true), BURN_DISPLAY_MS);
     return () => clearTimeout(timeout);
   }, [seq, burn, burnExpired]);
+
+  useEffect(() => {
+    if (!passedPlayerId || passExpired) return;
+    const timeout = setTimeout(() => setPassExpired(true), PASS_DISPLAY_MS);
+    return () => clearTimeout(timeout);
+  }, [seq, passedPlayerId, passExpired]);
 
   const [prevAnnouncementTs, setPrevAnnouncementTs] = useState<number | null>(null);
   const [announcementExpired, setAnnouncementExpired] = useState(false);
@@ -106,10 +123,14 @@ export function PirateNarrator({
   const showingError = Boolean(errorCode) && !errorExpired;
   const showingSkip = !showingError && skippedPlayerId !== null && !skipExpired;
   const showingBurn = !showingError && !showingSkip && burn !== null && !burnExpired;
+  const showingPass = !showingError && !showingSkip && !showingBurn && passedPlayerId !== null && !passExpired;
   const showingAnnouncement =
-    !showingError && !showingSkip && !showingBurn && Boolean(announcement) && !announcementExpired;
+    !showingError && !showingSkip && !showingBurn && !showingPass && Boolean(announcement) && !announcementExpired;
   const wasSkippedMe = skippedPlayerId === myPlayerId;
   const wasBurnedByMe = burn?.burnedBy === myPlayerId;
+  const allPassedBurn = burn?.reason === 'allPassed';
+  const passedByMe = burn?.passedBy === myPlayerId;
+  const iPassed = passedPlayerId === myPlayerId;
 
   const image = showingError
     ? pirateError
@@ -121,13 +142,17 @@ export function PirateNarrator({
         ? wasBurnedByMe
           ? pirateHappy
           : pirateWait
-        : showingAnnouncement
-          ? announcement!.type === 'joined'
+        : showingPass
+          ? isMyTurn
             ? pirateHappy
             : pirateWait
-          : isMyTurn
-            ? pirateHappy
-            : pirateWait;
+          : showingAnnouncement
+            ? announcement!.type === 'joined'
+              ? pirateHappy
+              : pirateWait
+            : isMyTurn
+              ? pirateHappy
+              : pirateWait;
 
   const message = showingError
     ? toPirateSpeech(errorCode as string)
@@ -136,18 +161,26 @@ export function PirateNarrator({
         ? '¡Te han saltado!'
         : '¡SALTO!'
       : showingBurn
-        ? wasBurnedByMe
-          ? '¡Has quemado la mesa! Sigue jugando tú.'
-          : burn!.reason === 'wild'
-            ? `¡${currentPlayerName} ha quemado la mesa con un comodín!`
-            : `¡Mesa quemada! Todos han pasado, sigue ${currentPlayerName}.`
-        : showingAnnouncement
-          ? announcement!.type === 'joined'
-            ? `¡${announcement!.playerName} se ha unido a la partida!`
-            : `${announcement!.playerName} ha abandonado la partida.`
-          : isMyTurn
-            ? '¡Es tu turno, adelante!'
-            : `Es el turno de ${currentPlayerName}...`;
+        ? allPassedBurn
+          ? passedByMe
+            ? 'Pasas. ¡Pasamos a la siguiente ronda!'
+            : `${burnPasserName ?? 'El último jugador'} pasa. ¡Pasamos a la siguiente ronda!`
+          : wasBurnedByMe
+            ? '¡Has sacado un 2 y quemas la mesa! Sigues tú.'
+            : `¡${currentPlayerName} ha sacado un 2 y quema la mesa!`
+        : showingPass
+          ? iPassed
+            ? `Pasas. Es el turno de ${currentPlayerName}.`
+            : isMyTurn
+              ? `${passedPlayerName ?? 'El jugador anterior'} pasa. ¡Es tu turno!`
+              : `${passedPlayerName ?? 'El jugador anterior'} pasa. Es el turno de ${currentPlayerName}.`
+          : showingAnnouncement
+            ? announcement!.type === 'joined'
+              ? `¡${announcement!.playerName} se ha unido a la partida!`
+              : `${announcement!.playerName} ha abandonado la partida.`
+            : isMyTurn
+              ? '¡Es tu turno, adelante!'
+              : `Es el turno de ${currentPlayerName}...`;
 
   const bubbleModifier = showingError
     ? ' pirate-bubble-error'
@@ -155,14 +188,18 @@ export function PirateNarrator({
       ? ' pirate-bubble-skip'
       : showingBurn
         ? ' pirate-bubble-burn'
-        : showingAnnouncement
-          ? ''
-          : isMyTurn
+        : showingPass
+          ? isMyTurn
             ? ' pirate-bubble-myturn'
-            : ' pirate-bubble-turn';
+            : ' pirate-bubble-turn'
+          : showingAnnouncement
+            ? ''
+            : isMyTurn
+              ? ' pirate-bubble-myturn'
+              : ' pirate-bubble-turn';
 
   // Aviso de turno por defecto (sin error/salto/quema/anuncio): el nombre del jugador va resaltado.
-  const showingTurn = !showingError && !showingSkip && !showingBurn && !showingAnnouncement;
+  const showingTurn = !showingError && !showingSkip && !showingBurn && !showingPass && !showingAnnouncement;
   const content = !showingTurn ? (
     message
   ) : isMyTurn ? (
@@ -178,7 +215,7 @@ export function PirateNarrator({
   // Cuando se muestra un salto o una quema, la clave incluye `seq` para forzar el reinicio de la
   // animación aunque el texto sea idéntico al del suceso anterior (p. ej. dos saltos seguidos al
   // mismo jugador): sin esto, AnimatePresence no detecta cambio y el aviso parece no producirse.
-  const messageKey = showingSkip || showingBurn ? `${message}-${seq}` : message;
+  const messageKey = showingSkip || showingBurn || showingPass ? `${message}-${seq}` : message;
 
   return (
     <div className="pirate-narrator">
@@ -190,7 +227,8 @@ export function PirateNarrator({
           className="pirate-avatar"
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0 }}
+          // salida instantánea: con mode="wait" una salida animada deja ver el aviso anterior un instante
+          exit={{ opacity: 0, transition: { duration: 0 } }}
           transition={{ duration: 0.25 }}
         />
       </AnimatePresence>
@@ -200,7 +238,7 @@ export function PirateNarrator({
           className={`pirate-bubble${bubbleModifier}`}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
+          exit={{ opacity: 0, transition: { duration: 0 } }}
           transition={{ duration: 0.25 }}
         >
           {content}

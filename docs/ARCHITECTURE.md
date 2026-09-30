@@ -49,7 +49,8 @@ GameState
   currentTurn     string
   lastPlay        { playerId, cards } | null
   lastSkip        { skippedPlayerId } | null   // solo refleja si la última jugada causó un salto de turno
-  lastBurn        { burnedBy, reason: 'wild' | 'allPassed' } | null   // solo refleja si la última jugada/pase quemó la mesa
+  lastBurn        { burnedBy, reason: 'wild' | 'allPassed', passedBy? } | null   // solo refleja si la última jugada/pase quemó la mesa; passedBy = último en pasar (solo 'allPassed')
+  lastPass        string | null   // quien pasó, si la última acción fue un pase que NO quemó la mesa (el pirata anuncia "X pasa. Es el turno de Y")
   seq             number          // se incrementa en cada jugada/pase; permite al cliente distinguir dos saltos o quemas consecutivos que involucren al mismo jugador
   finishedOrder   string[]        // orden final (podio); los roles forzosos se añaden al final
   departedPlayers string[]        // se desconectaron a mitad de esta ronda: mano descartada, sin rol
