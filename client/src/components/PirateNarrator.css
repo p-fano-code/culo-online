@@ -1,12 +1,12 @@
 .pirate-narrator {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
   flex-shrink: 0;
 }
 
 .pirate-avatar {
-  width: clamp(72px, 20vw, 100px);
+  width: clamp(96px, 26vw, 150px);
   transition: width 0.3s ease;
   height: auto;
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
@@ -18,12 +18,12 @@
   color: #241705;
   font-family: var(--heading);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 18px;
   line-height: 1.3;
-  padding: 10px 16px;
-  border-radius: 16px;
+  padding: 14px 22px;
+  border-radius: 20px;
   border: 2px solid #241705;
-  max-width: min(220px, 58vw);
+  max-width: min(320px, 62vw);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
@@ -48,11 +48,11 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  border: 9px solid transparent;
+  border: 12px solid transparent;
 }
 
 .pirate-bubble::after {
-  left: -8px;
+  left: -11px;
   border-right-color: #fdf6e3;
 }
 
@@ -68,9 +68,60 @@
   border-right-color: #ffe6d1;
 }
 
+/* aviso de turno: dorado cuando te toca a ti, azul cuando le toca a otro */
+.pirate-bubble.pirate-bubble-myturn {
+  border-color: var(--accent);
+  background: #fff4cf;
+  font-size: 22px;
+  animation: pirate-bubble-glow 1.6s ease-in-out infinite;
+}
+
+.pirate-bubble.pirate-bubble-myturn::after {
+  border-right-color: #fff4cf;
+}
+
+.pirate-bubble-myturn-text {
+  color: #b3261e;
+  font-weight: 800;
+}
+
+.pirate-bubble.pirate-bubble-turn {
+  border-color: #2f7fb8;
+  background: #e6f4ff;
+}
+
+.pirate-bubble.pirate-bubble-turn::after {
+  border-right-color: #e6f4ff;
+}
+
+.pirate-bubble-name {
+  color: #1c5d8f;
+  font-weight: 800;
+}
+
+@keyframes pirate-bubble-glow {
+  0%,
+  100% {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 0 0 0 rgba(240, 180, 41, 0.35);
+  }
+  50% {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 0 22px 4px rgba(240, 180, 41, 0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pirate-bubble.pirate-bubble-myturn {
+    animation: none;
+  }
+}
+
 @media (max-width: 400px) {
   .pirate-bubble {
-    font-size: 12px;
-    padding: 8px 12px;
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  .pirate-bubble.pirate-bubble-myturn {
+    font-size: 16px;
   }
 }

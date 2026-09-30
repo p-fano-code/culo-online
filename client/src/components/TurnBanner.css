@@ -1,0 +1,57 @@
+/* reserva la altura para que la mesa no salte al cambiar de turno */
+.turn-banner-slot {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.turn-banner {
+  margin: 0;
+  padding: 6px 28px;
+  border-radius: 999px;
+  font-size: 40px;
+  line-height: 1.2;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.28);
+  border: 2px solid rgba(143, 211, 255, 0.45);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.turn-banner-name {
+  color: #8fd3ff;
+}
+
+.turn-banner.mine {
+  color: var(--accent-strong);
+  border-color: var(--accent);
+  animation: turn-banner-glow 1.6s ease-in-out infinite;
+}
+
+@keyframes turn-banner-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(240, 180, 41, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 22px 4px rgba(240, 180, 41, 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .turn-banner.mine {
+    animation: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .turn-banner-slot {
+    min-height: 48px;
+  }
+
+  .turn-banner {
+    font-size: 26px;
+    padding: 4px 18px;
+  }
+}

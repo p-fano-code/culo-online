@@ -1,9 +1,10 @@
-import { Card } from './Card';
 import { Hand } from './Hand';
 import { PirateNarrator } from './PirateNarrator';
 import { GameOverModal } from './GameOverModal';
 import { SpectatorPanel } from './SpectatorPanel';
 import { ExchangeModal } from './ExchangeModal';
+import { TurnTimer } from './TurnTimer';
+import { Pile } from './Pile';
 import type { Card as CardType, ExchangeView, GameView } from '../store/gameStore';
 import type { Announcement, PlayerView } from '../store/roomStore';
 
@@ -83,6 +84,12 @@ export function Table({
     <section id="table">
       {exchangeModal}
 
+      <TurnTimer
+        deadline={game.turnDeadline}
+        isMyTurn={isMyTurn}
+        currentPlayerName={playerName(players, game.currentTurn)}
+      />
+
       {isHost && (
         <button type="button" className="danger table-close" onClick={handleCloseRoom}>
           Finalizar partida
@@ -123,20 +130,7 @@ export function Table({
             announcement={announcement}
           />
 
-          <div className="pile">
-            {game.lastPlay ? (
-              <>
-                <p>{playerName(players, game.lastPlay.playerId)} jugó:</p>
-                <div className="pile-cards">
-                  {game.lastPlay.cards.map((card) => (
-                    <Card key={`${card.suit}-${card.rank}`} card={card} />
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="pile-placeholder">Mesa libre</p>
-            )}
-          </div>
+          <Pile lastPlay={game.lastPlay} lastBurn={game.lastBurn} seq={game.seq} players={players} />
         </div>
 
         {isSpectator ? (

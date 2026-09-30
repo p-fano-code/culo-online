@@ -4,6 +4,7 @@ import { applyRoleExchange } from '../game/exchange.js';
 import { getGame, setGame } from '../game/gameStore.js';
 import { broadcastExchange, broadcastGameState } from '../game/broadcast.js';
 import { scheduleAutoRestart, cancelAutoRestart, AUTO_RESTART_MS } from '../game/roundTimer.js';
+import { scheduleTurnTimeout, cancelTurnTimeout, resolveTurnTimeout, TURN_TIMEOUT_MS } from '../game/turnTimer.js';
 import { toRoomView } from '../rooms/roomManager.js';
 import type { Room } from '../rooms/types.js';
 import type { GameState } from '../game/types.js';
@@ -13,11 +14,50 @@ function broadcastRoomUpdate(io: Server, room: Room) {
 }
 
 /**
+ * Mantiene el temporizador de turno sincronizado con el estado: si la ronda terminó lo cancela; si el turno
+ * sigue siendo el mismo (p. ej. se desconectó otro jugador) conserva el plazo; si no, arma 60s para el nuevo turno.
+ */
+function applyTurnTimer(io: Server, room: Room, previous: GameState | undefined, next: GameState): GameState {
+  if (next.phase !== 'playing') {
+    cancelTurnTimeout(room.code);
+    return { ...next, turnDeadline: null };
+  }
+
+  const sameTurn =
+    previous?.phase === 'playing' &&
+    previous.turnDeadline !== null &&
+    previous.currentTurn === next.currentTurn &&
+    previous.seq === next.seq;
+  if (sameTurn) return { ...next, turnDeadline: previous.turnDeadline };
+
+  const expectedTurn = next.currentTurn;
+  const expectedSeq = next.seq;
+  scheduleTurnTimeout(room.code, () => handleTurnTimeout(io, room, expectedTurn, expectedSeq));
+  return { ...next, turnDeadline: Date.now() + TURN_TIMEOUT_MS };
+}
+
+/** Se agotó el tiempo: pasa turno o, con la mesa libre, juega una carta al azar del jugador en turno. */
+function handleTurnTimeout(io: Server, room: Room, expectedTurn: string, expectedSeq: number): void {
+  const state = getGame(room.code);
+  // evita que un temporizador antiguo actúe sobre un turno que ya cambió
+  if (!state || state.phase !== 'playing' || state.currentTurn !== expectedTurn || state.seq !== expectedSeq) return;
+
+  const result = resolveTurnTimeout(state);
+  if (!result.ok) {
+    console.warn(`[turnTimer] sala ${room.code}: no se pudo resolver el turno (${result.error})`);
+    return;
+  }
+  armRoundEndIfNeeded(io, room, result.state);
+}
+
+/**
  * Se llama tras cualquier jugada/paso/desconexión que pueda haber terminado la ronda. Si de verdad acaba
  * de terminar, arma la cuenta atrás de 90s para la siguiente ronda (con inicio automático si nadie pulsa
  * el botón) y difunde el estado ya con el plazo incluido.
  */
-export function armRoundEndIfNeeded(io: Server, room: Room, newState: GameState): void {
+export function armRoundEndIfNeeded(io: Server, room: Room, incomingState: GameState): void {
+  const newState = applyTurnTimer(io, room, getGame(room.code), incomingState);
+
   if (newState.phase !== 'finished') {
     setGame(room.code, newState);
     broadcastGameState(io, room);
@@ -75,6 +115,7 @@ export function startNextRound(io: Server, room: Room, { manual }: { manual: boo
     : undefined;
 
   let game = createGame(eligiblePlayers.map((p) => p.id), previousCuloId, forcedCuloId, forcedViceculoId);
+  game = applyTurnTimer(io, room, undefined, game);
 
   broadcastRoomUpdate(io, room);
 

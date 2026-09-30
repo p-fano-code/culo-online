@@ -61,6 +61,7 @@ export function createGame(
     forcedCuloId,
     forcedViceculoId,
     nextRoundDeadline: null,
+    turnDeadline: null,
   };
 }
 
