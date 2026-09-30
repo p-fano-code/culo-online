@@ -1,0 +1,105 @@
+/* Justo debajo del botón de reglas "?" (.help-button: top 16px, 44px de alto) */
+.turn-timer {
+  position: fixed;
+  top: 72px;
+  left: 16px;
+  z-index: 300;
+  min-width: 132px;
+  max-width: 180px;
+  padding: 10px 16px 14px;
+  border-radius: 14px;
+  background: var(--surface-strong);
+  border: 2px solid var(--border);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.turn-timer-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.turn-timer-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.turn-timer-seconds {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.turn-timer-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.turn-timer-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  width: 100%;
+  background: var(--text-muted);
+  transform-origin: left center;
+  transition: transform 0.25s linear;
+}
+
+.turn-timer.mine {
+  border-color: var(--accent);
+}
+
+.turn-timer.mine .turn-timer-main,
+.turn-timer.mine .turn-timer-label {
+  color: var(--accent-strong);
+}
+
+.turn-timer.mine .turn-timer-bar {
+  background: var(--accent);
+}
+
+.turn-timer.warning {
+  border-color: var(--danger);
+}
+
+.turn-timer.warning .turn-timer-main {
+  color: var(--danger);
+}
+
+.turn-timer.warning .turn-timer-bar {
+  background: var(--danger);
+}
+
+@media (max-width: 480px) {
+  .turn-timer {
+    min-width: 108px;
+    padding: 8px 12px 12px;
+  }
+
+  .turn-timer-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .turn-timer-seconds {
+    font-size: 22px;
+  }
+}

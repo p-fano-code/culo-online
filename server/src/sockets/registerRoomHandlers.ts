@@ -14,6 +14,7 @@ import type { Room, RoomView } from '../rooms/types.js';
 import { deleteGame, getGame } from '../game/gameStore.js';
 import { departFromGame } from '../game/gameManager.js';
 import { broadcastGameState } from '../game/broadcast.js';
+import { cancelTurnTimeout } from '../game/turnTimer.js';
 import { armRoundEndIfNeeded, startNextRound } from './roundFlow.js';
 
 type CreateRoomPayload = { playerName: string };
@@ -94,6 +95,7 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
     const result = closeRoom(found.room.code, found.player.id);
     if ('error' in result) return ack?.(result);
 
+    cancelTurnTimeout(result.room.code);
     deleteGame(result.room.code);
     io.to(result.room.code).emit('room:closed');
 

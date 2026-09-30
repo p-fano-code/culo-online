@@ -47,4 +47,6 @@ export interface GameState {
   forcedViceculoId: string | null;
   /** epoch ms del final de la cuenta atrás para la siguiente ronda; solo relevante con phase === 'finished'. */
   nextRoundDeadline: number | null;
+  /** epoch ms en que se agota el turno del jugador actual; solo relevante con phase === 'playing'. */
+  turnDeadline: number | null;
 }

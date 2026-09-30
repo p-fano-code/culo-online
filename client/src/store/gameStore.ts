@@ -43,6 +43,7 @@ export interface GameView {
   handCounts: HandCount[];
   seatOrder: string[];
   nextRoundDeadline: number | null;
+  turnDeadline: number | null;
 }
 
 export interface ExchangeView {

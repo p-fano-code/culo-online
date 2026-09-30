@@ -14,8 +14,9 @@
 
 .playing-card-flip {
   position: relative;
-  width: 66px;
-  height: 96px;
+  /* si cambias el ancho, actualiza CARD_WIDTH_PX en Hand.tsx */
+  width: 78px;
+  height: 114px;
   transform-style: preserve-3d;
 }
 

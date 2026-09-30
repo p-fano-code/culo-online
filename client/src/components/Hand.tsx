@@ -1,4 +1,4 @@
-import { useState, type TouchEvent } from 'react';
+import { useEffect, useState, type TouchEvent } from 'react';
 import { Card } from './Card';
 import { cardKey, sortHand } from '../game/cardDisplay';
 import type { Card as CardType } from '../store/gameStore';
@@ -16,13 +16,32 @@ const ARC_HEIGHT_PX = 14;
 const HOVER_LIFT_PX = 34;
 const HOVER_SCALE_BOOST = 0.14;
 const HOVER_SPREAD_RATIO = 0.65;
-const COLLAPSED_OVERLAP_PX = 60;
+const COLLAPSED_OVERLAP_PX = 70;
+/** debe coincidir con el ancho de .playing-card-flip en Card.css */
+const CARD_WIDTH_PX = 78;
+/** margen horizontal que dejamos a la mano respecto al borde de la ventana */
+const HAND_SIDE_PADDING_PX = 64;
+/** nunca dejamos visible menos que esto de cada carta, aunque haya que desbordar */
+const MIN_VISIBLE_PX = 12;
 
-function getOverlap(cardCount: number): number {
-  if (cardCount <= 6) return 30;
-  if (cardCount <= 10) return 40;
-  if (cardCount <= 16) return 48;
-  return 54;
+/** Solape deseado según el nº de cartas, ajustado para que la mano quepa en el ancho disponible. */
+function getOverlap(cardCount: number, viewportWidth: number): number {
+  const desired = cardCount <= 6 ? 22 : cardCount <= 10 ? 34 : cardCount <= 16 ? 44 : 52;
+  if (cardCount <= 1) return desired;
+
+  const available = viewportWidth - HAND_SIDE_PADDING_PX;
+  const minOverlapToFit = CARD_WIDTH_PX - (available - CARD_WIDTH_PX) / (cardCount - 1);
+  return Math.min(CARD_WIDTH_PX - MIN_VISIBLE_PX, Math.max(desired, minOverlapToFit));
+}
+
+function useViewportWidth(): number {
+  const [width, setWidth] = useState(() => window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  return width;
 }
 
 function getFanTransform(index: number, total: number) {
@@ -57,7 +76,8 @@ export function Hand({ cards, isMyTurn, canPass, onPlay, onPass }: HandProps) {
   const [revealed, setRevealed] = useState(false);
   const sorted = sortHand(cards);
   const selectedCards = sorted.filter((card) => selected.has(cardKey(card)));
-  const overlap = getOverlap(sorted.length);
+  const viewportWidth = useViewportWidth();
+  const overlap = getOverlap(sorted.length, viewportWidth);
 
   const toggle = (card: CardType) => {
     const key = cardKey(card);

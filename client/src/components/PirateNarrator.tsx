@@ -155,7 +155,25 @@ export function PirateNarrator({
       ? ' pirate-bubble-skip'
       : showingBurn
         ? ' pirate-bubble-burn'
-        : '';
+        : showingAnnouncement
+          ? ''
+          : isMyTurn
+            ? ' pirate-bubble-myturn'
+            : ' pirate-bubble-turn';
+
+  // Aviso de turno por defecto (sin error/salto/quema/anuncio): el nombre del jugador va resaltado.
+  const showingTurn = !showingError && !showingSkip && !showingBurn && !showingAnnouncement;
+  const content = !showingTurn ? (
+    message
+  ) : isMyTurn ? (
+    <>
+      ¡Es <span className="pirate-bubble-myturn-text">tu turno</span>, adelante!
+    </>
+  ) : (
+    <>
+      Es el turno de <span className="pirate-bubble-name">{currentPlayerName}</span>
+    </>
+  );
 
   // Cuando se muestra un salto o una quema, la clave incluye `seq` para forzar el reinicio de la
   // animación aunque el texto sea idéntico al del suceso anterior (p. ej. dos saltos seguidos al
@@ -185,7 +203,7 @@ export function PirateNarrator({
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.25 }}
         >
-          {message}
+          {content}
         </motion.div>
       </AnimatePresence>
     </div>
