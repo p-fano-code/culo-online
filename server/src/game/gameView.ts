@@ -13,6 +13,7 @@ export interface GameView {
   lastPlay: Play | null;
   lastSkip: Skip | null;
   lastBurn: Burn | null;
+  lastPass: string | null;
   seq: number;
   finishedOrder: string[];
   roles: Record<string, Role>;
@@ -33,6 +34,7 @@ export function toGameView(state: GameState, playerId: string): GameView {
     lastPlay: state.lastPlay,
     lastSkip: state.lastSkip,
     lastBurn: state.lastBurn,
+    lastPass: state.lastPass,
     seq: state.seq,
     finishedOrder: state.finishedOrder,
     roles: state.roles,

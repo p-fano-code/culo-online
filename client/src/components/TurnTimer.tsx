@@ -22,7 +22,8 @@ export function TurnTimer({ deadline, isMyTurn, currentPlayerName }: TurnTimerPr
 
   if (deadline === null) return null;
 
-  const remaining = Math.max(0, Math.ceil((deadline - now) / 1000));
+  // `now` puede ir hasta 250ms por detrás al llegar un plazo nuevo: sin el tope se vería "61s" un instante
+  const remaining = Math.min(TURN_SECONDS, Math.max(0, Math.ceil((deadline - now) / 1000)));
   const progress = Math.min(1, remaining / TURN_SECONDS);
   const classes = ['turn-timer', isMyTurn ? 'mine' : '', remaining <= WARNING_SECONDS ? 'warning' : '']
     .filter(Boolean)

@@ -53,6 +53,7 @@ export function createGame(
     lastPlay: null,
     lastSkip: null,
     lastBurn: null,
+    lastPass: null,
     seq: 0,
     finishedOrder: [],
     departedPlayers: [],
@@ -180,6 +181,7 @@ function finishGame(state: GameState, rawFinishedOrder: string[]): GameState {
     passedPlayers: [],
     lastSkip: null,
     lastBurn: null,
+    lastPass: null,
   };
 }
 
@@ -218,6 +220,7 @@ export function playCards(state: GameState, playerId: string, cards: Card[]): Pl
     lastPlay: { playerId, cards },
     lastSkip: null,
     lastBurn: wild ? { burnedBy: playerId, reason: 'wild' } : null,
+    lastPass: null,
     passedPlayers: [],
     seq: state.seq + 1,
   };
@@ -262,11 +265,15 @@ export function passTurn(state: GameState, playerId: string): PlayResult {
   if (state.requiredCount === null) return { ok: false, error: 'CANNOT_PASS_ON_FREE_PLAY' };
 
   const passedPlayers = [...state.passedPlayers, playerId];
-  const activeCount = state.seatOrder.filter((id) => !isOut(state, id)).length;
+  const leaderId = state.lastPlay?.playerId ?? null;
+  // Jugadores activos que aún pueden responder a la última jugada (ni han pasado ni son quien la hizo).
+  // Si el líder ya se quedó sin cartas no cuenta, así que tienen que pasar todos los activos.
+  const pendingPlayers = state.seatOrder.filter(
+    (id) => !isOut(state, id) && !passedPlayers.includes(id) && id !== leaderId,
+  );
 
-  // Se han pasado todos los jugadores activos menos el que hizo la última jugada: se quema la mesa.
-  if (passedPlayers.length >= activeCount - 1) {
-    const leaderId = state.lastPlay?.playerId ?? null;
+  // Nadie más puede responder a la última jugada: se quema la mesa.
+  if (pendingPlayers.length === 0) {
     const leaderStillActive = leaderId !== null && !isOut(state, leaderId);
     const nextLeader = leaderStillActive
       ? leaderId
@@ -283,7 +290,8 @@ export function passTurn(state: GameState, playerId: string): PlayResult {
         passedPlayers: [],
         lastPlay: null,
         lastSkip: null,
-        lastBurn: { burnedBy: nextLeader ?? playerId, reason: 'allPassed' },
+        lastBurn: { burnedBy: nextLeader ?? playerId, reason: 'allPassed', passedBy: playerId },
+        lastPass: null,
         currentTurn: nextLeader ?? playerId,
         seq: state.seq + 1,
       },
@@ -293,7 +301,15 @@ export function passTurn(state: GameState, playerId: string): PlayResult {
   const next = findNextActive(state, playerId, { skipPassed: true });
   return {
     ok: true,
-    state: { ...state, passedPlayers, lastSkip: null, lastBurn: null, currentTurn: next ?? playerId, seq: state.seq + 1 },
+    state: {
+      ...state,
+      passedPlayers,
+      lastSkip: null,
+      lastBurn: null,
+      lastPass: playerId,
+      currentTurn: next ?? playerId,
+      seq: state.seq + 1,
+    },
   };
 }
 

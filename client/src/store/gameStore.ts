@@ -19,6 +19,7 @@ export interface Skip {
 export interface Burn {
   burnedBy: string;
   reason: 'wild' | 'allPassed';
+  passedBy?: string; // solo en 'allPassed': el último jugador que pasó
 }
 
 export type Role = 'presidente' | 'vicepresidente' | 'viceculo' | 'culo' | null;
@@ -36,6 +37,7 @@ export interface GameView {
   lastPlay: Play | null;
   lastSkip: Skip | null;
   lastBurn: Burn | null;
+  lastPass: string | null; // quien pasó, si la última acción fue un pase sin quema
   seq: number;
   finishedOrder: string[];
   roles: Record<string, Role>;
