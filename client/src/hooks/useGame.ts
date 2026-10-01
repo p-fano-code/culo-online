@@ -23,13 +23,6 @@ export function useGame() {
     };
   }, [setExchange]);
 
-  useEffect(() => {
-    socket.on('room:closed', reset);
-    return () => {
-      socket.off('room:closed', reset);
-    };
-  }, [reset]);
-
   const playCards = useCallback(
     (cards: Card[]) => {
       setError(null);

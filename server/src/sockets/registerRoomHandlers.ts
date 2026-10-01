@@ -35,6 +35,11 @@ function broadcastAnnouncement(io: Server, room: Room, type: 'joined' | 'left', 
   io.to(room.code).emit('room:announcement', { type, playerName, timestamp: Date.now() });
 }
 
+function broadcastHostDropped(io: Server, room: Room, previousHostName: string) {
+  const newHostName = room.players.find((p) => p.id === room.hostId)?.name ?? '';
+  io.to(room.code).emit('room:hostDropped', { previousHostName, newHostName });
+}
+
 export function registerRoomHandlers(io: Server, socket: Socket) {
   socket.on('room:create', (payload: CreateRoomPayload, ack: Ack<SessionResponse>) => {
     const playerName = payload?.playerName?.trim();
@@ -84,8 +89,15 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
   });
 
   socket.on('room:leave', () => {
+    const found = findRoomBySocket(socket.id);
+    const wasHost = found ? found.room.hostId === found.player.id : false;
+    const departedName = found?.player.name;
+
     const result = leaveRoom(socket.id);
-    if (result && !result.deleted) broadcastRoomUpdate(io, result.room);
+    if (result && !result.deleted) {
+      broadcastRoomUpdate(io, result.room);
+      if (wasHost && departedName) broadcastHostDropped(io, result.room, departedName);
+    }
   });
 
   socket.on('room:close', (_payload: unknown, ack?: Ack<{ error?: string }>) => {
@@ -97,7 +109,7 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
 
     cancelTurnTimeout(result.room.code);
     deleteGame(result.room.code);
-    io.to(result.room.code).emit('room:closed');
+    io.to(result.room.code).emit('room:closed', { reason: 'closed' });
 
     const socketsInRoom = io.sockets.adapter.rooms.get(result.room.code);
     if (socketsInRoom) {
@@ -115,8 +127,12 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
       const stillInActiveGame = game?.phase === 'playing' && game.seatOrder.includes(player.id);
       if (stillInActiveGame) return; // se purgará al empezar la siguiente ronda, no antes
 
+      const wasHost = room.hostId === player.id;
       const removed = removePlayer(room.code, player.id);
-      if (removed && !removed.deleted) broadcastRoomUpdate(io, removed.room);
+      if (removed && !removed.deleted) {
+        broadcastRoomUpdate(io, removed.room);
+        if (wasHost) broadcastHostDropped(io, removed.room, player.name);
+      }
     });
 
     if (!result) return;

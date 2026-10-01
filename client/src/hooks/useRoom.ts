@@ -2,6 +2,8 @@ import { useCallback, useEffect } from 'react';
 import { socket } from '../socket';
 import { useRoomStore, type Announcement, type RoomView } from '../store/roomStore';
 
+type HostDroppedPayload = { previousHostName: string; newHostName: string };
+
 const STORAGE_KEY = 'culo-online:session';
 
 type StoredSession = { roomCode: string; playerId: string; token: string };
@@ -29,8 +31,20 @@ function persistSession(session: StoredSession | null) {
 }
 
 export function useRoom() {
-  const { room, session, error, announcement, setRoom, setSession, setError, setAnnouncement, reset } =
-    useRoomStore();
+  const {
+    room,
+    session,
+    error,
+    announcement,
+    gameEndedNotice,
+    setRoom,
+    setSession,
+    setError,
+    setAnnouncement,
+    setGameEndedNotice,
+    clearGameEndedNotice,
+    reset,
+  } = useRoomStore();
 
   useEffect(() => {
     const handleRoomUpdate = (updated: RoomView) => setRoom(updated);
@@ -51,13 +65,23 @@ export function useRoom() {
   useEffect(() => {
     const handleRoomClosed = () => {
       persistSession(null);
-      reset();
+      setGameEndedNotice({ reason: 'closed' });
     };
     socket.on('room:closed', handleRoomClosed);
     return () => {
       socket.off('room:closed', handleRoomClosed);
     };
-  }, [reset]);
+  }, [setGameEndedNotice]);
+
+  useEffect(() => {
+    const handleHostDropped = (payload: HostDroppedPayload) => {
+      setGameEndedNotice({ reason: 'hostDropped', previousHostName: payload.previousHostName, newHostName: payload.newHostName });
+    };
+    socket.on('room:hostDropped', handleHostDropped);
+    return () => {
+      socket.off('room:hostDropped', handleHostDropped);
+    };
+  }, [setGameEndedNotice]);
 
   useEffect(() => {
     const stored = loadStoredSession();
@@ -121,5 +145,18 @@ export function useRoom() {
     });
   }, [setError]);
 
-  return { room, session, error, announcement, createRoom, joinRoom, startRoom, leaveRoom, closeRoom };
+  return {
+    room,
+    session,
+    error,
+    announcement,
+    gameEndedNotice,
+    createRoom,
+    joinRoom,
+    startRoom,
+    leaveRoom,
+    closeRoom,
+    clearGameEndedNotice,
+    resetRoom: reset,
+  };
 }
