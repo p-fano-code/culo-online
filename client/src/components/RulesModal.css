@@ -104,10 +104,3 @@
 .rules-dot.active {
   background: var(--accent);
 }
-
-@media (max-width: 480px) {
-  .rules-footer button:not(.rules-dot) {
-    padding: 8px 14px;
-    font-size: 13px;
-  }
-}
