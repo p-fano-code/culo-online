@@ -6,6 +6,9 @@ import { RulesModal } from './components/RulesModal';
 import { useRoom } from './hooks/useRoom';
 import { useGame } from './hooks/useGame';
 import './App.css';
+import './mobile.css';
+// debe ir el último: sobrescribe estilos de componentes solo en tablet horizontal
+import './tablet.css';
 
 function App() {
   const [connected, setConnected] = useState(socket.connected);

@@ -87,19 +87,3 @@
 .turn-timer.warning .turn-timer-bar {
   background: var(--danger);
 }
-
-@media (max-width: 480px) {
-  .turn-timer {
-    min-width: 108px;
-    padding: 8px 12px 12px;
-  }
-
-  .turn-timer-icon {
-    width: 22px;
-    height: 22px;
-  }
-
-  .turn-timer-seconds {
-    font-size: 22px;
-  }
-}

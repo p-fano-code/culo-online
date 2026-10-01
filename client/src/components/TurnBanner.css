@@ -44,14 +44,3 @@
     animation: none;
   }
 }
-
-@media (max-width: 480px) {
-  .turn-banner-slot {
-    min-height: 48px;
-  }
-
-  .turn-banner {
-    font-size: 26px;
-    padding: 4px 18px;
-  }
-}
