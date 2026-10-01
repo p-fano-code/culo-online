@@ -82,6 +82,8 @@ Eventos servidor → cliente:
 - `game:turnChanged`
 - `game:invalidMove` `{ reason }` — solo al jugador que intentó la jugada
 - `game:finished` `{ ranking }`
+- `room:closed` `{ reason: 'closed' }` — el host ha finalizado la partida explícitamente (botón "Finalizar partida", con confirmación previa en el cliente); se informa con un modal antes de volver al menú
+- `room:hostDropped` `{ previousHostName, newHostName }` — el host ha abandonado la sala sin finalizarla (se desconectó o salió sin confirmar); la sala sigue abierta con un nuevo host asignado automáticamente, y se informa con el mismo tipo de modal
 
 Regla de diseño: el servidor no realiza broadcasts de estado completo (`io.to(room).emit(fullState)`) con las manos de todos los jugadores. Cada jugador recibe un payload distinto (`socket.emit` individual) para evitar que las cartas ajenas queden expuestas mediante inspección del tráfico de red.
 

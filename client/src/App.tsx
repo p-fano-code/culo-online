@@ -3,6 +3,7 @@ import { socket } from './socket';
 import { Lobby } from './components/Lobby';
 import { Table } from './components/Table';
 import { RulesModal } from './components/RulesModal';
+import { GameEndedModal } from './components/GameEndedModal';
 import { useRoom } from './hooks/useRoom';
 import { useGame } from './hooks/useGame';
 import './App.css';
@@ -15,13 +16,25 @@ function App() {
     session,
     error: roomError,
     announcement,
+    gameEndedNotice,
     createRoom,
     joinRoom,
     startRoom,
     leaveRoom,
     closeRoom,
+    clearGameEndedNotice,
+    resetRoom,
   } = useRoom();
-  const { game, error: gameError, exchange, playCards, pass, clearExchange } = useGame();
+  const { game, error: gameError, exchange, playCards, pass, clearExchange, reset: resetGame } = useGame();
+
+  const handleDismissGameEndedNotice = () => {
+    if (gameEndedNotice?.reason === 'closed') {
+      resetGame();
+      resetRoom();
+    } else {
+      clearGameEndedNotice();
+    }
+  };
 
   useEffect(() => {
     const handleConnect = () => setConnected(true);
@@ -103,6 +116,7 @@ function App() {
       </button>
       <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
       {content}
+      {gameEndedNotice && <GameEndedModal notice={gameEndedNotice} onDismiss={handleDismissGameEndedNotice} />}
     </>
   );
 }

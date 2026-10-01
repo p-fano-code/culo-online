@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Hand } from './Hand';
 import { PirateNarrator } from './PirateNarrator';
 import { GameOverModal } from './GameOverModal';
@@ -5,6 +6,7 @@ import { SpectatorPanel } from './SpectatorPanel';
 import { ExchangeModal } from './ExchangeModal';
 import { TurnTimer } from './TurnTimer';
 import { Pile } from './Pile';
+import { ConfirmEndGameModal } from './ConfirmEndGameModal';
 import type { Card as CardType, ExchangeView, GameView } from '../store/gameStore';
 import type { Announcement, PlayerView } from '../store/roomStore';
 
@@ -49,11 +51,17 @@ export function Table({
   onPlay,
   onPass,
 }: TableProps) {
-  const handleCloseRoom = () => {
-    if (window.confirm('¿Seguro que quieres finalizar la partida? Se cerrará la sala para todos los jugadores.')) {
-      closeRoom();
-    }
-  };
+  const [confirmingClose, setConfirmingClose] = useState(false);
+
+  const confirmEndGameModal = confirmingClose ? (
+    <ConfirmEndGameModal
+      onConfirm={() => {
+        setConfirmingClose(false);
+        closeRoom();
+      }}
+      onCancel={() => setConfirmingClose(false)}
+    />
+  ) : null;
 
   const exchangeModal = exchange ? <ExchangeModal exchange={exchange} onDone={onClearExchange} /> : null;
 
@@ -61,6 +69,7 @@ export function Table({
     return (
       <section id="table">
         {exchangeModal}
+        {confirmEndGameModal}
         <GameOverModal
           finishedOrder={game.finishedOrder}
           roles={game.roles}
@@ -70,7 +79,7 @@ export function Table({
           nextRoundDeadline={game.nextRoundDeadline}
           roomError={roomError}
           onLeaveRoom={leaveRoom}
-          onCloseRoom={handleCloseRoom}
+          onCloseRoom={() => setConfirmingClose(true)}
           onStartNextRound={startRoom}
         />
       </section>
@@ -83,6 +92,7 @@ export function Table({
   return (
     <section id="table">
       {exchangeModal}
+      {confirmEndGameModal}
 
       <TurnTimer
         deadline={game.turnDeadline}
@@ -91,7 +101,7 @@ export function Table({
       />
 
       {isHost && (
-        <button type="button" className="danger table-close" onClick={handleCloseRoom}>
+        <button type="button" className="danger table-close" onClick={() => setConfirmingClose(true)}>
           Finalizar partida
         </button>
       )}

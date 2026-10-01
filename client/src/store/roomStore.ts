@@ -28,15 +28,22 @@ export type Announcement = {
   timestamp: number;
 };
 
+export type GameEndedNotice =
+  | { reason: 'closed' }
+  | { reason: 'hostDropped'; previousHostName: string; newHostName: string };
+
 interface RoomStore {
   room: RoomView | null;
   session: Session | null;
   error: string | null;
   announcement: Announcement | null;
+  gameEndedNotice: GameEndedNotice | null;
   setRoom: (room: RoomView) => void;
   setSession: (session: Session | null) => void;
   setError: (error: string | null) => void;
   setAnnouncement: (announcement: Announcement) => void;
+  setGameEndedNotice: (notice: GameEndedNotice) => void;
+  clearGameEndedNotice: () => void;
   reset: () => void;
 }
 
@@ -45,9 +52,12 @@ export const useRoomStore = create<RoomStore>((set) => ({
   session: null,
   error: null,
   announcement: null,
+  gameEndedNotice: null,
   setRoom: (room) => set({ room }),
   setSession: (session) => set({ session }),
   setError: (error) => set({ error }),
   setAnnouncement: (announcement) => set({ announcement }),
-  reset: () => set({ room: null, session: null, error: null, announcement: null }),
+  setGameEndedNotice: (gameEndedNotice) => set({ gameEndedNotice }),
+  clearGameEndedNotice: () => set({ gameEndedNotice: null }),
+  reset: () => set({ room: null, session: null, error: null, announcement: null, gameEndedNotice: null }),
 }));
