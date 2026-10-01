@@ -19,12 +19,14 @@
   }
 
   /* ---------- TurnTimer ---------- */
-  /* más pequeño; sigue debajo del "?" (top 72px) y ocupa hasta ~125px de alto */
+  /* compacto por defecto (solo icono + segundos) para no chocar con los nombres de los jugadores;
+     se expande al tocarlo (TurnTimer.tsx añade la clase .expanded) y se encoge al tocar fuera */
   .turn-timer {
-    min-width: 84px;
-    max-width: 120px;
-    padding: 5px 10px 8px;
+    min-width: 0;
+    max-width: 62px;
+    padding: 6px 8px;
     border-radius: 12px;
+    cursor: pointer;
   }
 
   .turn-timer-main {
@@ -42,6 +44,17 @@
 
   .turn-timer-label {
     font-size: 11px;
+  }
+
+  .turn-timer:not(.expanded) .turn-timer-label,
+  .turn-timer:not(.expanded) .turn-timer-bar {
+    display: none;
+  }
+
+  .turn-timer.expanded {
+    min-width: 108px;
+    max-width: 160px;
+    padding: 8px 12px 12px;
   }
 
   /* ---------- Mesa ---------- */
