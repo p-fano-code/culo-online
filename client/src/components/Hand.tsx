@@ -16,22 +16,47 @@ const ARC_HEIGHT_PX = 14;
 const HOVER_LIFT_PX = 34;
 const HOVER_SCALE_BOOST = 0.14;
 const HOVER_SPREAD_RATIO = 0.65;
-const COLLAPSED_OVERLAP_PX = 70;
+/** parte visible de cada carta cuando la mano está boca abajo (montón) */
+const COLLAPSED_VISIBLE_PX = 8;
 /** debe coincidir con el ancho de .playing-card-flip en Card.css */
 const CARD_WIDTH_PX = 78;
 /** margen horizontal que dejamos a la mano respecto al borde de la ventana */
 const HAND_SIDE_PADDING_PX = 64;
+/** Móvil: debe coincidir con el breakpoint y el ancho de carta de la mano en mobile.css */
+const MOBILE_MAX_WIDTH_PX = 480;
+const CARD_WIDTH_MOBILE_PX = 60;
+/** en móvil se recortan los paddings laterales de la mesa (ver mobile.css), así cabe más mano */
+const HAND_SIDE_PADDING_MOBILE_PX = 24;
+
+/** Ancho de carta y margen lateral de la mano según el ancho de pantalla. */
+function getHandMetrics(viewportWidth: number) {
+  const isMobile = viewportWidth <= MOBILE_MAX_WIDTH_PX;
+  return {
+    cardWidth: isMobile ? CARD_WIDTH_MOBILE_PX : CARD_WIDTH_PX,
+    sidePadding: isMobile ? HAND_SIDE_PADDING_MOBILE_PX : HAND_SIDE_PADDING_PX,
+  };
+}
 /** nunca dejamos visible menos que esto de cada carta, aunque haya que desbordar */
 const MIN_VISIBLE_PX = 12;
 
+/** Dispositivos sin cursor (tablet/móvil): se detectan para adaptar la separación y el "hover" de las cartas. */
+const TOUCH_QUERY = '(hover: none) and (pointer: coarse)';
+
+/** Solape deseado según el nº de cartas. En táctil las cartas van más separadas para poder tocarlas sin fallar. */
+function getDesiredOverlap(cardCount: number, isTouch: boolean): number {
+  if (isTouch) return cardCount <= 6 ? 12 : cardCount <= 10 ? 22 : cardCount <= 16 ? 30 : 36;
+  return cardCount <= 6 ? 22 : cardCount <= 10 ? 34 : cardCount <= 16 ? 44 : 52;
+}
+
 /** Solape deseado según el nº de cartas, ajustado para que la mano quepa en el ancho disponible. */
-function getOverlap(cardCount: number, viewportWidth: number): number {
-  const desired = cardCount <= 6 ? 22 : cardCount <= 10 ? 34 : cardCount <= 16 ? 44 : 52;
+function getOverlap(cardCount: number, viewportWidth: number, isTouch: boolean): number {
+  const desired = getDesiredOverlap(cardCount, isTouch);
   if (cardCount <= 1) return desired;
 
-  const available = viewportWidth - HAND_SIDE_PADDING_PX;
-  const minOverlapToFit = CARD_WIDTH_PX - (available - CARD_WIDTH_PX) / (cardCount - 1);
-  return Math.min(CARD_WIDTH_PX - MIN_VISIBLE_PX, Math.max(desired, minOverlapToFit));
+  const { cardWidth, sidePadding } = getHandMetrics(viewportWidth);
+  const available = viewportWidth - sidePadding;
+  const minOverlapToFit = cardWidth - (available - cardWidth) / (cardCount - 1);
+  return Math.min(cardWidth - MIN_VISIBLE_PX, Math.max(desired, minOverlapToFit));
 }
 
 function useViewportWidth(): number {
@@ -42,6 +67,17 @@ function useViewportWidth(): number {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   return width;
+}
+
+function useIsTouch(): boolean {
+  const [isTouch, setIsTouch] = useState(() => window.matchMedia(TOUCH_QUERY).matches);
+  useEffect(() => {
+    const mql = window.matchMedia(TOUCH_QUERY);
+    const handleChange = () => setIsTouch(mql.matches);
+    mql.addEventListener('change', handleChange);
+    return () => mql.removeEventListener('change', handleChange);
+  }, []);
+  return isTouch;
 }
 
 function getFanTransform(index: number, total: number) {
@@ -74,13 +110,35 @@ export function Hand({ cards, isMyTurn, canPass, onPlay, onPass }: HandProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const [prevIsMyTurn, setPrevIsMyTurn] = useState(isMyTurn);
+
+  // Al terminar mi turno (jugada, pase propio o tiempo agotado) se limpia la selección y el "hover"
+  // para que no queden cartas marcadas mientras juegan los demás.
+  if (isMyTurn !== prevIsMyTurn) {
+    setPrevIsMyTurn(isMyTurn);
+    if (!isMyTurn) {
+      setSelected(new Set());
+      setHoveredIndex(null);
+    }
+  }
   const sorted = sortHand(cards);
   const selectedCards = sorted.filter((card) => selected.has(cardKey(card)));
   const viewportWidth = useViewportWidth();
-  const overlap = getOverlap(sorted.length, viewportWidth);
+  const isTouch = useIsTouch();
+  const overlap = getOverlap(sorted.length, viewportWidth, isTouch);
+  const collapsedOverlap = getHandMetrics(viewportWidth).cardWidth - COLLAPSED_VISIBLE_PX;
 
-  const toggle = (card: CardType) => {
+  const toggle = (card: CardType, index: number) => {
     const key = cardKey(card);
+    const wasSelected = selected.has(key);
+
+    // En táctil no hay cursor: la carta tocada recibe el mismo efecto que el hover del ratón (se eleva,
+    // se separa de sus vecinas y se ve entera). Al deseleccionarla vuelve a su sitio en el abanico.
+    if (isTouch) {
+      if (!wasSelected) setHoveredIndex(index);
+      else setHoveredIndex((current) => (current === index ? null : current));
+    }
+
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
@@ -127,7 +185,7 @@ export function Hand({ cards, isMyTurn, canPass, onPlay, onPass }: HandProps) {
                 key={key}
                 card={card}
                 faceDown
-                style={{ marginLeft: index === 0 ? 0 : -COLLAPSED_OVERLAP_PX, zIndex: index, rotate: 0, y: 0 }}
+                style={{ marginLeft: index === 0 ? 0 : -collapsedOverlap, zIndex: index, rotate: 0, y: 0 }}
               />
             );
           }
@@ -148,7 +206,7 @@ export function Hand({ cards, isMyTurn, canPass, onPlay, onPass }: HandProps) {
               card={card}
               selected={isSelected}
               dataIndex={index}
-              onClick={isMyTurn ? () => toggle(card) : undefined}
+              onClick={isMyTurn ? () => toggle(card, index) : undefined}
               onHoverStart={isMyTurn ? () => setHoveredIndex(index) : undefined}
               onHoverEnd={
                 isMyTurn ? () => setHoveredIndex((current) => (current === index ? null : current)) : undefined
